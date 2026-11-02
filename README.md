@@ -21,7 +21,7 @@ Zadání: `../zadani-2-fdailyrewards.md`. Paper 26.3, Java 25.
 
 | Oblast | Změna |
 |---|---|
-| Preview měsíce | Měsíční soubor `MM_rewards.yml` může mít sekci `preview` (`names` a `commands`). Příkazy se spustí z konzole **jednou** při přechodu na nový měsíc odměn (výměna modelu mazlíčka na NPC, vybavení armor standů). Spuštěný měsíc je v `meta.preview_month`, denní restart je nespustí znovu. Soubor bez příkazů (šablona) nic nespouští. |
+| Preview měsíce | Měsíční soubor `MM_rewards.yml` může mít sekci `preview` (`names` a `commands`). Příkazy se spustí z konzole **jednou** při přechodu na nový měsíc odměn (výměna MythicMobs NPC mazlíčka měsíce na spawnu). Spuštěný měsíc je v `meta.preview_month`, denní restart je nespustí znovu. Soubor bez příkazů (šablona) nic nespouští. |
 | Kontrola měsíce | Smyčka každou minutu (první běh 30 s po startu, až po načtení Citizens a ModelEngine). Měsíc se přepne i bez online hráčů, dřív jen při vyhodnocení odměn. |
 | Příkaz | `admin preview` (stav), `admin preview apply` (spustí příkazy znovu). Právo `fdailyrewards.admin.preview`. |
 | Placeholdery | `preview_<klíč>`, `month_days_left`, `month_left`, `status_line`, `pass_line` (tabulka níže). Texty v `placeholders.today_text`, `status_line.*`, `pass_line.*`; bez klíče v prod configu platí výchozí z jaru. |
@@ -33,8 +33,8 @@ preview:
   names:
     mazlicek: "Wyverna Wynnifred"
   commands:
-    - "meg npc model citizens:59 remove nm_myrtle_the_mummy"
-    - "meg npc model citizens:59 add nm_wynnifred_the_wyvern"
+    - "mm mobs kill npc_denni_mazlicek_myrtle_the_mummy"      # ve skutečnosti všech 13 typů
+    - "mm mobs spawn npc_denni_mazlicek_wynnifred_the_wyvern 1 Spawn,-7.5,83,8.5,-134.72,0"
 ```
 
 ## Změny v 1.1.1 (opravy po review, `../zadani-2b-fdailyrewards-opravy.md`)
