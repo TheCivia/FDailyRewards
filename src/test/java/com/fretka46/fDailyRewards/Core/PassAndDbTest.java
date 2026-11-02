@@ -139,9 +139,9 @@ class PassAndDbTest {
         assertEquals("1 den", CzFormat.days(1));
         assertEquals("3 dny", CzFormat.days(3));
         assertEquals("12 dní", CzFormat.days(12));
-        assertEquals("12 dní 4 h", CzFormat.duration(java.time.Duration.ofHours(12 * 24 + 4), "-"));
-        assertEquals("3 h 12 min", CzFormat.duration(java.time.Duration.ofMinutes(192), "-"));
-        assertEquals("5 min", CzFormat.duration(java.time.Duration.ofMinutes(5), "-"));
+        assertEquals("12d 4h", CzFormat.duration(java.time.Duration.ofHours(12 * 24 + 4), "-"));
+        assertEquals("3h 12min", CzFormat.duration(java.time.Duration.ofMinutes(192), "-"));
+        assertEquals("5min", CzFormat.duration(java.time.Duration.ofMinutes(5), "-"));
         assertEquals("-", CzFormat.duration(java.time.Duration.ofSeconds(20), "-"));
         assertEquals("30. 11. 2026", CzFormat.date(LocalDate.of(2026, 11, 30)));
     }
