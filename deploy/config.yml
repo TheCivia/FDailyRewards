@@ -145,6 +145,20 @@ placeholders:
   no_text: "no"
   dash: "–"
   less_than_minute: "méně než minuta"
+  # %fdr_month_left% poslední den měsíce
+  today_text: "dnes"
+  # %fdr_status_line% pro hologram, podle %fdr_state%. {next_in} = čas do další odměny, {progress} = 12/31.
+  # Barvy ve formátu pluginu, který řádek zobrazuje (CMI hologram: {#rrggbb} a &-kódy).
+  status_line:
+    ready: "{#ffc700}&lDnešní odměna čeká, klikni!"
+    claimed_today: "{#F4EBDD}Dnes vyzvednuto, další za {#ff002e}{next_in}"
+    waiting: "{#F4EBDD}Další odměna za {#ff002e}{next_in}"
+    vip_locked: "{#F4EBDD}Zbývají odměny jen pro {#ffc700}Login Pass"
+    done: "{#24ff00}Máš všechny odměny měsíce!"
+  # %fdr_pass_line%: Login Pass ano/ne. {expires} = poslední den platnosti.
+  pass_line:
+    active: "{#ffc700}㐈 Login Pass {#F4EBDD}aktivní do {#ffc700}{expires}"
+    inactive: "{#F4EBDD}㐈 Odemkni {#ffc700}Login Pass {#F4EBDD}v {#ff002e}/obchod"
 
 # Zvuky (prázdné = bez zvuku)
 sound_denied: "thecivia:thecivia.sound.27"

@@ -309,6 +309,21 @@ public final class Database implements AutoCloseable {
         }
     }
 
+    /** Hodnota z tabulky {@code meta}, {@code null} když klíč neexistuje. */
+    public String meta(String key) {
+        synchronized (lock) {
+            String[] r = {null};
+            query("SELECT value FROM meta WHERE key = ?", rs -> r[0] = rs.getString(1), key);
+            return r[0];
+        }
+    }
+
+    public void setMeta(String key, String value) {
+        synchronized (lock) {
+            update("INSERT INTO meta (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value", key, value);
+        }
+    }
+
     // ------------------------------------------------------------------ plumbing
 
     private interface RowHandler {

@@ -1,4 +1,4 @@
-# FDailyRewards 1.1.1
+# FDailyRewards 1.2.0
 
 Update pluginu denních odměn pro TheCivia (základ: zdroj od fretka46, viz `../FDailyRewards-original-src`).
 Zadání: `../zadani-2-fdailyrewards.md`. Paper 26.3, Java 25.
@@ -16,6 +16,26 @@ Zadání: `../zadani-2-fdailyrewards.md`. Paper 26.3, Java 25.
 | Připomínky | Jedna smyčka místo úlohy na hráče: po připojení za 8 s, po resetu dne s rozptylem 0–60 s, jinak po `reward_claim_available_interval`. Jen dokud je odměna opravdu dostupná. Čas poslední připomínky je v DB (restart serveru nevyvolá zprávu navíc). |
 | Bezpečnost dat | Atomický zápis claimu (`UNIQUE(uuid, měsíc, den)`, dvojklik nevydá odměnu dvakrát), atomický login bonus, jedno spojení se zámkem, schéma s verzí, **automatická záloha DB před migrací**. |
 | Přechod z permission | `legacy_pass_permission` (viz nasazení): Pass z LuckPerms se do vypnutí dál uznává. Nikdo nepřijde o Pass při nasazení JARu před úpravou Tebexu. |
+
+## Změny v 1.2.0 (ukázka na spawnu, hologram)
+
+| Oblast | Změna |
+|---|---|
+| Preview měsíce | Měsíční soubor `MM_rewards.yml` může mít sekci `preview` (`names` a `commands`). Příkazy se spustí z konzole **jednou** při přechodu na nový měsíc odměn (výměna modelu mazlíčka na NPC, vybavení armor standů). Spuštěný měsíc je v `meta.preview_month`, denní restart je nespustí znovu. Soubor bez příkazů (šablona) nic nespouští. |
+| Kontrola měsíce | Smyčka každou minutu (první běh 30 s po startu, až po načtení Citizens a ModelEngine). Měsíc se přepne i bez online hráčů, dřív jen při vyhodnocení odměn. |
+| Příkaz | `admin preview` (stav), `admin preview apply` (spustí příkazy znovu). Právo `fdailyrewards.admin.preview`. |
+| Placeholdery | `preview_<klíč>`, `month_days_left`, `month_left`, `status_line`, `pass_line` (tabulka níže). Texty v `placeholders.today_text`, `status_line.*`, `pass_line.*`; bez klíče v prod configu platí výchozí z jaru. |
+
+Ukázka sekce (generuje ji `TheCivia-navrhy/skripty/fdr_rok_gen.py`):
+
+```yaml
+preview:
+  names:
+    mazlicek: "Wyverna Wynnifred"
+  commands:
+    - "meg npc model citizens:59 remove nm_myrtle_the_mummy"
+    - "meg npc model citizens:59 add nm_wynnifred_the_wyvern"
+```
 
 ## Změny v 1.1.1 (opravy po review, `../zadani-2b-fdailyrewards-opravy.md`)
 
@@ -49,6 +69,7 @@ Vše pod `/fdailyrewards` (alias `/daily` řeší CMI CustomAlias a zůstává).
 | `admin setday <hráč> <den>` | `…setday` | Označí den jako vyzvednutý bez odměny (cooldown se nemění). |
 | `admin resetday <hráč> <den>` | `…resetday` | Smaže claim dne **jen v aktuálním měsíci** (dřív mazal všechny měsíce). |
 | `admin checkday <hráč>` | `…checkday` | Stav hráče. |
+| `admin preview [apply]` | `…preview` | Stav ukázky na spawnu (načtený měsíc, kdy naposledy proběhla, názvy); `apply` spustí `preview.commands` znovu. |
 | `reload` | `fdailyrewards.reload` | Znovu načte config, odměny a služby. |
 
 ### Pro AT: dárky na požádání
@@ -85,6 +106,10 @@ Offline hráč vrací prázdný řetězec. Texty jsou v configu: `placeholders.y
 | `vip_months_left`, `vip_expires`, `vip_left` | souvislá řada zaplacených měsíců vč. aktuálního / `30. 11. 2026` / `12 dní 4 h` |
 | `vip_expires_unix` | epoch sekundy konce platnosti, `0` když není (pro CiviaRank; permission se tu nepočítá) |
 | `login_bonus_today` | zda hráč dnes dostal Premium Pass bonus |
+| `preview_<klíč>` | text z `preview.names` měsíčního souboru (`preview_mazlicek`, `preview_set`, `preview_skin`), jinak prázdné |
+| `month_days_left`, `month_left` | dny odměn do konce měsíce bez dneška / `9 dní`, poslední den `dnes` |
+| `status_line` | řádek pro hologram podle `state` (`placeholders.status_line.*`, `{next_in}`, `{progress}`) |
+| `pass_line` | řádek Login Passu (`placeholders.pass_line.active` s `{expires}` / `inactive`) |
 
 ## Pravidla odměn (zachovaná z původního pluginu)
 
@@ -96,7 +121,7 @@ Offline hráč vrací prázdný řetězec. Texty jsou v configu: `placeholders.y
 
 ## Nasazení na produkci
 
-Restart serveru je denně v 04:00, reset dne v 04:15. JAR nahraj přes den, migrace proběhne při nejbližším restartu. Verze 1.1.1 nemění schéma DB oproti 1.1.0.
+Restart serveru je denně v 04:00, reset dne v 04:15. JAR nahraj přes den, migrace proběhne při nejbližším restartu. Verze 1.1.1 ani 1.2.0 nemění schéma DB oproti 1.1.0 (1.2.0 jen zapisuje klíč `preview_month` do tabulky `meta`).
 
 1. **Záloha** složky `plugins/FDailyRewards` (plugin navíc sám udělá `database.db.bak-v1-<čas>` před migrací).
 2. Smaž starý JAR, nahraj `deploy/FDailyRewards-1.1.1.jar`. **`config.yml` ani `rewardsTemplate.yml` neměň.** Nové klíče se berou z výchozího configu v JARu (prod config je jeho přesný prefix). Volitelně `deploy/config.yml` jako přehled všech klíčů.
@@ -139,4 +164,4 @@ Restart serveru je denně v 04:00, reset dne v 04:15. JAR nahraj přes den, migr
 
 `gradle test` (JDK 25, 46 testů): všechny stavy `evaluate`, neaktivní hráč, VIP přeskok, kratší měsíc, okno 00:00–04:14, hranice měsíce, tři nákupy Passu za sebou, `giftnext`/`unlockmissed`, atomicita claimu, migrace staré DB (včetně duplicit) a záloha. Od 1.1.1 navíc `ReviewFixesTest`: režimy `giftnext`, log neúspěchů, přepnutí měsíce po resetu, čekání po VIP dni, `next_in`, fronta dárků, filtr hromadného předání, cache, načtení `config.yml` přes skutečné `YamlConfiguration` a mezery v Passu. S `-PprodDb=<cesta>` se migruje i kopie produkční DB.
 
-Build: `gradle build` → `build/libs/FDailyRewards-1.1.1.jar`.
+Build: `gradle build` (JDK 25) → `build/libs/FDailyRewards-1.2.0.jar`. Od 1.2.0 navíc `PreviewServiceTest` (jednou za měsíc i po restartu, `apply`, chybný příkaz, soubor bez příkazů, čtení sekce `preview`).

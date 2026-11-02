@@ -333,6 +333,29 @@ public final class Admin {
         });
     }
 
+    /** Stav ukázky na spawnu; {@code apply} spustí příkazy preview načteného měsíce znovu. */
+    public static int PreviewExecutor(CommandContext<CommandSourceStack> ctx, boolean apply) {
+        return run(ctx, "fdailyrewards.admin.preview", null, sender -> {
+            FDailyRewards plugin = FDailyRewards.get();
+            var p = plugin.configManager().preview();
+            YearMonth month = plugin.configManager().loadedMonth();
+            if (apply) {
+                if (p.commands().isEmpty()) {
+                    Messages.sendMessage(sender, "Měsíc " + month + " nemá v souboru odměn žádné preview.commands.");
+                    return 0;
+                }
+                int ok = plugin.preview().apply();
+                Messages.sendMessage(sender, "Preview měsíce " + month + ": spuštěno " + ok + "/" + p.commands().size() + " příkazů.");
+                return 1;
+            }
+            String names = p.names().isEmpty() ? "-" : p.names().entrySet().stream()
+                    .map(e -> e.getKey() + "=" + e.getValue()).collect(Collectors.joining(", "));
+            Messages.sendMessage(sender, "Preview: načtený měsíc " + month + ", naposledy spuštěno pro " + plugin.preview().appliedMonth()
+                    + ", příkazů " + p.commands().size() + ", názvy: " + names + ".");
+            return 1;
+        });
+    }
+
     private static String monthRange(List<YearMonth> months) {
         if (months.isEmpty()) return "-";
         return months.size() == 1 ? months.get(0).toString() : months.get(0) + " až " + months.get(months.size() - 1);

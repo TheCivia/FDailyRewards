@@ -26,14 +26,14 @@ import java.util.TreeMap;
  */
 public final class ConfigManager {
     private record Snapshot(YearMonth month, Map<Integer, DailyRewardDay> byDay, List<DailyRewardDay> custom,
-                            Map<String, DailyRewardItem> templates, RewardCatalog catalog) {}
+                            Map<String, DailyRewardItem> templates, RewardCatalog catalog, MonthPreview preview) {}
 
     private static final String[] TEMPLATE_KEYS = {
             "reward_claimed_item", "reward_claimed_item_vip", "reward_claim_available_item", "reward_claim_available_item_vip"
     };
 
     private final JavaPlugin plugin;
-    private volatile Snapshot snapshot = new Snapshot(null, Map.of(), List.of(), Map.of(), new RewardCatalog(Map.of()));
+    private volatile Snapshot snapshot = new Snapshot(null, Map.of(), List.of(), Map.of(), new RewardCatalog(Map.of()), MonthPreview.EMPTY);
 
     public ConfigManager(JavaPlugin plugin) {
         this.plugin = plugin;
@@ -57,6 +57,10 @@ public final class ConfigManager {
 
     public RewardCatalog catalog() {
         return snapshot.catalog;
+    }
+
+    public MonthPreview preview() {
+        return snapshot.preview;
     }
 
     public YearMonth loadedMonth() {
@@ -141,8 +145,17 @@ public final class ConfigManager {
         Map<Integer, Boolean> vipByDay = new LinkedHashMap<>();
         byDay.forEach((d, r) -> vipByDay.put(d, r.vip()));
         snapshot = new Snapshot(month, Collections.unmodifiableMap(byDay), List.copyOf(custom),
-                Collections.unmodifiableMap(templates), new RewardCatalog(vipByDay));
+                Collections.unmodifiableMap(templates), new RewardCatalog(vipByDay), readPreview(cfg.getConfigurationSection("preview")));
         Log.info("Načteno " + byDay.size() + " dní odměn z " + file.getName() + ".");
+    }
+
+    /** Sekce {@code preview} měsíčního souboru; bez ní {@link MonthPreview#EMPTY}. */
+    public static MonthPreview readPreview(ConfigurationSection sec) {
+        if (sec == null) return MonthPreview.EMPTY;
+        Map<String, String> names = new LinkedHashMap<>();
+        ConfigurationSection n = sec.getConfigurationSection("names");
+        if (n != null) for (String k : n.getKeys(false)) names.put(k.toLowerCase(java.util.Locale.ROOT), n.getString(k, ""));
+        return new MonthPreview(names, sec.getStringList("commands"));
     }
 
     public static Integer parseDay(String key) {

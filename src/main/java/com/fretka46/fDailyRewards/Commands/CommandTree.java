@@ -32,7 +32,7 @@ public final class CommandTree {
 
     private static final String[] ADMIN_PERMISSIONS = {
             "resetday", "setday", "giftday", "giftnext", "checkday", "unlockmissed", "setvip", "givepass", "removepass",
-            "passinfo", "pending"
+            "passinfo", "pending", "preview"
     };
 
     /** Podpříkaz vidí (i v tab-complete) jen ten, kdo na něj má právo; executor právo kontroluje znovu. */
@@ -77,6 +77,8 @@ public final class CommandTree {
                         .then(Commands.argument("month", IntegerArgumentType.integer(200001, 209912))
                                 .executes(ctx -> Admin.RemovePassExecutor(ctx, true)))))
                 .then(sub("passinfo").then(player().executes(Admin::PassInfoExecutor)))
+                .then(sub("preview").executes(ctx -> Admin.PreviewExecutor(ctx, false))
+                        .then(Commands.literal("apply").executes(ctx -> Admin.PreviewExecutor(ctx, true))))
                 // zpětně kompatibilní názvy (obě pod právem setvip)
                 .then(sub("setvip").then(player().executes(Admin::SetVipExecutor)))
                 .then(Commands.literal("removevip").requires(perm("fdailyrewards.admin.setvip")).then(player()

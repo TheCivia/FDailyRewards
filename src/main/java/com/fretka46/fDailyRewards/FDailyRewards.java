@@ -2,6 +2,7 @@ package com.fretka46.fDailyRewards;
 
 import com.fretka46.fDailyRewards.Commands.CommandTree;
 import com.fretka46.fDailyRewards.Core.PassService;
+import com.fretka46.fDailyRewards.Core.PreviewService;
 import com.fretka46.fDailyRewards.Core.RewardService;
 import com.fretka46.fDailyRewards.Core.TimeService;
 import com.fretka46.fDailyRewards.Listeners.LeftListener;
@@ -33,6 +34,7 @@ public final class FDailyRewards extends JavaPlugin {
     private volatile TimeService time;
     private volatile PassService pass;
     private volatile RewardService rewards;
+    private PreviewService preview;
     private PapiExpansion papi;
     private final AtomicBoolean monthReloadScheduled = new AtomicBoolean();
 
@@ -45,6 +47,7 @@ public final class FDailyRewards extends JavaPlugin {
     public ReminderService reminders() { return reminders; }
     public TimeService time() { return time; }
     public RewardService rewards() { return rewards; }
+    public PreviewService preview() { return preview; }
 
     @Override
     public void onEnable() {
@@ -60,6 +63,8 @@ public final class FDailyRewards extends JavaPlugin {
         }
 
         configManager = new ConfigManager(this);
+        preview = new PreviewService(database, () -> configManager.loadedMonth(), () -> configManager.preview(),
+                cmd -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd), Log::info);
         reminders = new ReminderService(this);
         buildServices();
         database.cleanup(time.today(), time.month(time.now()), Log::info);
@@ -77,6 +82,19 @@ public final class FDailyRewards extends JavaPlugin {
             papi.register();
         }
         reminders.start();
+
+        // Přepnutí měsíce nezávisle na hráčích (v 04:15 nemusí být nikdo online) a ukázka na spawnu.
+        // První běh až po 30 s, aby byly načtené NPC (Citizens) a modely (ModelEngine).
+        Bukkit.getScheduler().runTaskTimer(this, this::monthTick, 600L, 1200L);
+    }
+
+    private void monthTick() {
+        try {
+            reloadMonthIfChanged();
+            preview.applyIfNeeded();
+        } catch (RuntimeException ex) {
+            Log.severe("Kontrola měsíce selhala: " + ex.getMessage(), ex);
+        }
     }
 
     /** Sestaví čas a služby z aktuálního configu (při startu a reloadu). Databáze zůstává. */

@@ -58,6 +58,12 @@ public class PapiExpansion extends PlaceholderExpansion {
         return b ? c.getString("placeholders.yes_text", "yes") : c.getString("placeholders.no_text", "no");
     }
 
+    /** Text z configu; bez klíče v souboru platí výchozí hodnota z config.yml v jaru (getString s defaultem ji ignoruje). */
+    private String text(String path) {
+        String v = plugin.getConfig().getString(path);
+        return v == null ? "" : v;
+    }
+
     private String dash() {
         return plugin.getConfig().getString("placeholders.dash", "–");
     }
@@ -78,6 +84,13 @@ public class PapiExpansion extends PlaceholderExpansion {
         var svc = plugin.rewards();
         var time = svc.time();
         Instant now = time.now();
+        // nezávislé na hráči, bez dotazu do DB
+        if (key.startsWith("preview_")) return plugin.configManager().preview().names().getOrDefault(key.substring(8), "");
+        if (key.equals("month_days_left")) return String.valueOf(monthDaysLeft(time));
+        if (key.equals("month_left")) {
+            int left = monthDaysLeft(time);
+            return left == 0 ? text("placeholders.today_text") : CzFormat.days(left);
+        }
         ClaimState s = svc.evaluate(uuid);
         switch (key) {
             case "claimed_day": return String.valueOf(s.lastClaimedDay());
@@ -115,8 +128,30 @@ public class PapiExpansion extends PlaceholderExpansion {
                 return CzFormat.duration(time.until(e, now), plugin.getConfig().getString("placeholders.less_than_minute", "méně než minuta"));
             }
             case "login_bonus_today": return yn(svc.loginBonusToday(uuid));
+            case "status_line": return statusLine(s, time, now);
+            case "pass_line": {
+                if (!s.pass()) return text("placeholders.pass_line.inactive");
+                var last = svc.passInfo(uuid).lastDay();
+                return text("placeholders.pass_line.active")
+                        .replace("{expires}", last == null ? dash() : CzFormat.date(last));
+            }
             default: return null;
         }
+    }
+
+    /** Řádek pro hologram podle stavu, texty v {@code placeholders.status_line.<stav>}. */
+    private String statusLine(ClaimState s, com.fretka46.fDailyRewards.Core.TimeService time, Instant now) {
+        String nextIn = s.nextAvailableAt() == null ? dash()
+                : CzFormat.duration(time.until(s.nextAvailableAt(), now), plugin.getConfig().getString("placeholders.less_than_minute", "méně než minuta"));
+        return text("placeholders.status_line." + state(s))
+                .replace("{next_in}", nextIn)
+                .replace("{progress}", s.claimedCount() + "/" + daysInMonth(s));
+    }
+
+    /** Kolik dní odměn zbývá do konce měsíce bez dneška (poslední den = 0). */
+    private static int monthDaysLeft(com.fretka46.fDailyRewards.Core.TimeService time) {
+        var today = time.today();
+        return today.lengthOfMonth() - today.getDayOfMonth();
     }
 
     /** Počet dní odměn dostupných v tomto měsíci (dny nad délku měsíce propadají). */
