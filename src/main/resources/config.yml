@@ -13,7 +13,7 @@ message_prefix: "<#383838>[<#ff002e><bold>Survival</bold><#383838>] <#ffc700><bo
 #reward_claim_available_message: "<click:run_command:'/daily'><hover:show_text:'<gray>Klikni pro použití příkazu <#ff002e>/daily<gray>.'>Login odměna je dostupná! Použij <#ff002e>/daily<gray> pro její vyzvednutí!</hover></click>"
 reward_claim_available_command: "cmi bossbarmsg %player_name% &f&lMáš dostupnou {#ff002e}&lDenní Odměnu&f&l! Vyzvednout si ji můžeš pomocí {#ff002e}&l/daily -c:yellow -n:daily -s:1 -t:-1"
 #reward_claim_available_command: "say test"
-reward_claim_available_loreline: "<white>从 - Vyzvednout odměnu\n<white> "
+reward_claim_available_loreline: "<white>从 <#a8a8a8>· <#F4EBDD>Vyzvednout odměnu\n<white> "
 reward_claim_available_tommorow_loreline: "<white>Odměnu si budeš moci \n<white>vyzvednout <#ff002e>zítra<white>. \n<white>"
 reward_claim_available_2_days_loreline: "<white>Odměnu si budeš moci \n<white>vyzvednout za <#ff002e>2 dny<white>. \n<white>"
 reward_vip_locked_loreline: "<white>Pro vyzvednutí této odměny musíš \n<white>vlastnit <#ff002e>Login Pass<white>!\n<white>"
@@ -34,13 +34,13 @@ non_functional_items:
       material: FLINT
       customModelData: 357
       tooltipStyle: "minecraft:thecivia/legendary"
-      name: "<#383838>[<#ff002e>Info<#383838>]"
+      name: "<!shadow><white>倃<reset> <#F4EBDD><b>Info</b>"
       commands:
         - "cmi ctext obchod %player_name%"
       lore:
         - ""
-        - "<white>Zde si můžeš každý den "
-        - "<white>vyzvednout odměnu. "
+        - "<#F4EBDD>Zde si můžeš každý den "
+        - "<#F4EBDD>vyzvednout odměnu. "
         - ""
 
 
@@ -60,7 +60,7 @@ reward_claimed_item:
     customModelData: 352
     lore:
         - ""
-        - "<white>Tuto odměnu už máš vyzvednutou. "
+        - "<#F4EBDD>Tuto odměnu už máš vyzvednutou. "
         - ""
 
 reward_claim_available_item:
@@ -69,7 +69,7 @@ reward_claim_available_item:
     customModelData: 351
     lore:
         - ""
-        - "<white>Klikni pro vyzvednutí odměny. "
+        - "<#F4EBDD>Klikni pro vyzvednutí odměny. "
         - ""
 
 reward_claim_available_item_vip:
@@ -78,7 +78,7 @@ reward_claim_available_item_vip:
     customModelData: 354
     lore:
         - ""
-        - "<white>Klikni pro vyzvednutí odměny. "
+        - "<#F4EBDD>Klikni pro vyzvednutí odměny. "
         - ""
 
 reward_claimed_item_vip:
@@ -87,7 +87,7 @@ reward_claimed_item_vip:
     customModelData: 355
     lore:
         - ""
-        - "<white>Tuto odměnu už máš vyzvednutou. "
+        - "<#F4EBDD>Tuto odměnu už máš vyzvednutou. "
         - ""
 
 
