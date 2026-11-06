@@ -176,6 +176,7 @@ public final class ConfigManager {
                 sec.getInt("customModelData", sec.getInt("model_data", 0)),
                 sec.getString("name", sec.getString("display_name", "")),
                 lore,
-                sec.getString("tooltipStyle", sec.getString("tooltip_style")));
+                sec.getString("tooltipStyle", sec.getString("tooltip_style")),
+                sec.getString("itemModel", sec.getString("item_model")));
     }
 }

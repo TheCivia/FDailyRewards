@@ -22,6 +22,10 @@ final class Items {
         ItemStack stack = new ItemStack(mat);
         ItemMeta meta = stack.getItemMeta();
         if (cfg.customModelData() > 0) meta.setCustomModelData(cfg.customModelData());
+        if (cfg.itemModel() != null && !cfg.itemModel().isBlank()) {
+            NamespacedKey model = NamespacedKey.fromString(cfg.itemModel());
+            if (model != null) meta.setItemModel(model);
+        }
         if (cfg.name() != null && !cfg.name().isEmpty())
             meta.displayName(MINI_MESSAGE.deserialize(cfg.name()).decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE));
         if (cfg.lore() != null && !cfg.lore().isEmpty()) meta.lore(splitLore(cfg.lore()));
