@@ -38,8 +38,9 @@ public final class RewardActions {
     }
 
     public static void playSound(Player player, String key) {
-        String sound = FDailyRewards.get().getConfig().getString(key, "");
-        if (!sound.isBlank()) player.playSound(player.getLocation(), sound, 1.0f, 1.0f);
+        // bez výchozí hodnoty ve volání: chybějící klíč v configu serveru vezme hodnotu z configu v jaru
+        String sound = FDailyRewards.get().getConfig().getString(key);
+        if (sound != null && !sound.isBlank()) player.playSound(player.getLocation(), sound, 1.0f, 1.0f);
     }
 
     /**

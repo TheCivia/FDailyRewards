@@ -12,6 +12,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 
 /** Klikání v menu: zakáže veškerou manipulaci s itemy a vyhodnocuje klik na den přes RewardService. */
@@ -70,6 +71,12 @@ public class MenuListener implements Listener {
             case ALREADY_CLAIMED_TODAY -> "reward_already_claimed_today";
             default -> "reward_cannot_yet";
         };
+    }
+
+    @EventHandler
+    public void onInventoryClose(InventoryCloseEvent e) {
+        if (e.getInventory().getHolder() instanceof Menu && e.getPlayer() instanceof Player player)
+            RewardActions.playSound(player, "sound_menu");
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)

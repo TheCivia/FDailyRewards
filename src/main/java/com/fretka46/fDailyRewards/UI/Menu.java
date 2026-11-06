@@ -6,6 +6,7 @@ import com.fretka46.fDailyRewards.FDailyRewards;
 import com.fretka46.fDailyRewards.Storage.ConfigManager;
 import com.fretka46.fDailyRewards.Storage.DailyRewardDay;
 import com.fretka46.fDailyRewards.Storage.DailyRewardItem;
+import com.fretka46.fDailyRewards.Utils.RewardActions;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -51,6 +52,7 @@ public class Menu implements InventoryHolder {
 
     public void open() {
         viewer.openInventory(inventory);
+        RewardActions.playSound(viewer, "sound_menu");
     }
 
     public Integer getDayAt(int rawSlot) {

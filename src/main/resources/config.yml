@@ -163,6 +163,7 @@ placeholders:
 # Zvuky (prázdné = bez zvuku)
 sound_denied: "thecivia:thecivia.sound.27"
 sound_claimed: "thecivia:thecivia.sound.34"
+sound_menu: "thecivia:thecivia.sound.29"
 
 # Zprávy (prefix se přidá automaticky). {day} / {count} se nahradí.
 non_functional_vip_only: "Tato položka je pouze pro hráče s <#ff002e>Login Passem<gray>!"
