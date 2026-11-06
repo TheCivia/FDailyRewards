@@ -121,8 +121,6 @@ public final class RewardService {
         if (r != Reason.OK) return r;
         if (!db.tryInsertClaim(uuid, YearMonth.from(s.rewardDate()), s.rewardDate(), day, Source.CLAIM)) return Reason.ALREADY_CLAIMED;
         invalidate(uuid);
-        org.bukkit.entity.Player p = org.bukkit.Bukkit.getPlayer(uuid);
-        if (p != null) Analytika.track(p, "daily.claim", "hodnota", day);
         return Reason.OK;
     }
 

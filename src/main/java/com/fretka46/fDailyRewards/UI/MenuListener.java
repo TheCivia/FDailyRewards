@@ -1,5 +1,6 @@
 package com.fretka46.fDailyRewards.UI;
 
+import com.fretka46.fDailyRewards.Core.Analytika;
 import com.fretka46.fDailyRewards.Core.ClaimState.Reason;
 import com.fretka46.fDailyRewards.FDailyRewards;
 import com.fretka46.fDailyRewards.Storage.DailyRewardDay;
@@ -58,6 +59,7 @@ public class MenuListener implements Listener {
             return;
         }
 
+        Analytika.track(player, "daily.claim", "hodnota", day);
         RewardActions.deliver(player, day, null);
         holder.render();
     }
