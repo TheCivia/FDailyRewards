@@ -26,7 +26,7 @@ public class LoginListener implements Listener {
                 for (String command : config.getStringList("login_commands")) {
                     String cmd = command.replace("%player_name%", player.getName());
                     try {
-                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
+                        com.fretka46.fDailyRewards.Utils.VaultPenize.spust(cmd);
                     } catch (RuntimeException ex) {
                         Log.severe("login_commands selhal (" + cmd + ")", ex);
                     }

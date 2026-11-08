@@ -17,6 +17,12 @@ Zadání: `../zadani-2-fdailyrewards.md`. Paper 26.3, Java 25.
 | Bezpečnost dat | Atomický zápis claimu (`UNIQUE(uuid, měsíc, den)`, dvojklik nevydá odměnu dvakrát), atomický login bonus, jedno spojení se zámkem, schéma s verzí, **automatická záloha DB před migrací**. |
 | Přechod z permission | `legacy_pass_permission` (viz nasazení): Pass z LuckPerms se do vypnutí dál uznává. Nikdo nepřijde o Pass při nasazení JARu před úpravou Tebexu. |
 
+## Změny v 1.2.3 (peníze přes Vault)
+
+| Oblast | Změna |
+|---|---|
+| Výplata peněz | Příkaz `cmi money give %player_name% N` (i s `-s`) v odměnách dní a v `login_commands` se v YAML nechává, plugin ho za běhu vyplatí přes Vault `Economy.depositPlayer`. CiviaAnalytics (proxy Vaultu) pak u změny zůstatku zapíše zdroj `FDailyRewards`, ne `CMI`. Bez Vaultu, s neznámým hráčem nebo při chybě se spustí původní příkaz konzolí. Ostatní příkazy beze změny. |
+
 ## Změny v 1.2.0 (ukázka na spawnu, hologram)
 
 | Oblast | Změna |

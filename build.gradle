@@ -3,7 +3,7 @@ plugins {
 }
 
 group = 'com.fretka46'
-version = '1.2.2'
+version = '1.2.3'
 
 repositories {
     mavenCentral()
@@ -15,6 +15,8 @@ dependencies {
     // Paper 26.3 běží na Javě 25. sqlite-jdbc dodává server (Paper), proto jen pro testy.
     compileOnly 'io.papermc.paper:paper-api:26.3.build.200-stable'
     compileOnly 'me.clip:placeholderapi:2.12.3'
+    // Vault API jen ke kompilaci, jar ze serveru (výplata peněz přes Vault kvůli zdroji v CiviaAnalytics)
+    compileOnly files("${rootDir}/../../Plugins Prod For Claude/plugins/Vault-1.7.3.jar")
 
     // jen kvůli testu načtení config.yml přes skutečné YamlConfiguration (SnakeYAML jako na serveru)
     testImplementation('io.papermc.paper:paper-api:26.3.build.200-stable') {

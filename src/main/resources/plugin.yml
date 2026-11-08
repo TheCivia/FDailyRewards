@@ -5,7 +5,7 @@ api-version: '26.3'
 prefix: FDailyRewards
 authors: [ fretka46 ]
 description: Daily rewards plugin for TheCivia
-softdepend: [PlaceholderAPI]
+softdepend: [PlaceholderAPI, Vault]
 permissions:
   fdailyrewards.reload:
     default: op

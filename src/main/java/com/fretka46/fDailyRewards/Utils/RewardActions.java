@@ -15,7 +15,7 @@ import java.util.function.IntConsumer;
 import java.util.function.ObjIntConsumer;
 import java.util.stream.Collectors;
 
-/** Dodání odměny hráči: spuštění příkazů z konzole, zvuk, zpráva, fronta pro offline hráče. */
+/** Dodání odměny hráči: spuštění příkazů z konzole (peníze přes Vault), zvuk, zpráva, fronta pro offline hráče. */
 public final class RewardActions {
     private RewardActions() {}
 
@@ -30,7 +30,7 @@ public final class RewardActions {
             if (cmd == null || cmd.isBlank()) continue;
             String resolved = cmd.replace("%player_name%", player.getName()).replace("{player}", player.getName());
             try {
-                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), resolved);
+                VaultPenize.spust(resolved); // cmi money give přes Vault (zdroj FDailyRewards v CiviaAnalytics)
             } catch (RuntimeException ex) {
                 Log.severe("Příkaz odměny dne " + reward.day() + " selhal (" + resolved + ")", ex);
             }
