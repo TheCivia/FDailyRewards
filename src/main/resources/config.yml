@@ -170,3 +170,15 @@ non_functional_vip_only: "Tato položka je pouze pro hráče s <#ff002e>Login Pa
 gift_received: "Byla ti věnována odměna za den <#ff002e>{day}<gray>!"
 unlock_done: "Odemčeno dní: <#ff002e>{count}<gray>."
 gifts_received: "Byly ti doručeny odměny za dny <#ff002e>{days}<gray>!"
+
+# Brána proti farmení denních odměn přes alty (offline mode = účty zdarma). 0 = vypnuto.
+# Pozor: na server se tyhle klíče samy nedoplní, dopiš je ručně. Bez nich je brána vypnutá.
+anti_alt:
+  # Kolik různých účtů smí z jedné IP (IPv6 podle /64) vyzvednout denní odměnu v jednom dni odměn.
+  # Ukládá se jen solený hash IP (sůl v DB, tabulka meta), nikdy holá IP. Hashe se mažou po 2 dnech.
+  max_accounts_per_ip: 0
+  # Kolik minut musí mít účet odehráno (statistika serveru), než si může odměnu vyzvednout.
+  min_playtime_minutes: 0
+# Vlastní texty zamítnutí (bez klíče platí výchozí z pluginu). {max}, {minutes}, {left}
+#anti_alt_ip_limit: "..."
+#anti_alt_playtime: "..."

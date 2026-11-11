@@ -1,4 +1,4 @@
-# FDailyRewards 1.2.0
+# FDailyRewards 1.3.0
 
 Update pluginu denních odměn pro TheCivia (základ: zdroj od fretka46, viz `../FDailyRewards-original-src`).
 Zadání: `../zadani-2-fdailyrewards.md`. Paper 26.3, Java 25.

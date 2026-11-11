@@ -36,6 +36,7 @@ public final class FDailyRewards extends JavaPlugin {
     private volatile RewardService rewards;
     private PreviewService preview;
     private PapiExpansion papi;
+    private volatile String ipSalt;
     private final AtomicBoolean monthReloadScheduled = new AtomicBoolean();
 
     public static FDailyRewards get() {
@@ -48,6 +49,8 @@ public final class FDailyRewards extends JavaPlugin {
     public TimeService time() { return time; }
     public RewardService rewards() { return rewards; }
     public PreviewService preview() { return preview; }
+    /** Sůl hashe IP (brána proti altům), načtená z DB při startu; reload ji nemění. */
+    public String ipSalt() { return ipSalt; }
 
     @Override
     public void onEnable() {
@@ -58,6 +61,14 @@ public final class FDailyRewards extends JavaPlugin {
             database = Database.openFile(Path.of(getDataFolder().getPath(), "database.db"), Log::info);
         } catch (Database.DbException ex) {
             Log.severe("Databázi nelze otevřít, plugin se vypíná: " + ex.getMessage(), ex);
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+
+        try {
+            ipSalt = database.ipSalt(com.fretka46.fDailyRewards.Core.AntiAlt::newSalt);
+        } catch (Database.DbException ex) {
+            Log.severe("Sůl hashe IP nelze načíst, plugin se vypíná: " + ex.getMessage(), ex);
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
@@ -111,7 +122,8 @@ public final class FDailyRewards extends JavaPlugin {
                 TimeService.parseResetTime(cfg.getString("day_reset_time", "04:15"), Log::warning));
         pass = new PassService(database, time, this::hasLegacyPassPermission, () -> getConfig().getInt("pass_late_purchase_days", 0));
         rewards = new RewardService(database, time, () -> configManager.catalog(), pass,
-                () -> getConfig().getInt("placeholder_cache_millis", 5000), this::onRewardMonth);
+                () -> getConfig().getInt("placeholder_cache_millis", 5000), this::onRewardMonth,
+                () -> com.fretka46.fDailyRewards.Utils.AntiAltGate.settings(getConfig()));
         configManager.reload(time);
     }
 

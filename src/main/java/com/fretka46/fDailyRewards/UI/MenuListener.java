@@ -1,10 +1,12 @@
 package com.fretka46.fDailyRewards.UI;
 
 import com.fretka46.fDailyRewards.Core.Analytika;
+import com.fretka46.fDailyRewards.Core.AntiAlt;
 import com.fretka46.fDailyRewards.Core.ClaimState.Reason;
 import com.fretka46.fDailyRewards.FDailyRewards;
 import com.fretka46.fDailyRewards.Storage.DailyRewardDay;
 import com.fretka46.fDailyRewards.Storage.Database;
+import com.fretka46.fDailyRewards.Utils.AntiAltGate;
 import com.fretka46.fDailyRewards.Utils.Log;
 import com.fretka46.fDailyRewards.Utils.Messages;
 import com.fretka46.fDailyRewards.Utils.RewardActions;
@@ -45,14 +47,20 @@ public class MenuListener implements Listener {
         }
 
         Reason reason;
+        AntiAlt.Context gate = null;
         try {
-            reason = plugin.rewards().claim(player.getUniqueId(), day);
+            gate = AntiAltGate.context(player); // null = brána vypnutá, chování beze změny
+            reason = plugin.rewards().claim(player.getUniqueId(), day, gate);
         } catch (Database.DbException ex) {
             Log.severe("Vyzvednutí dne " + day + " pro " + player.getName() + " selhalo: " + ex.getMessage());
             Messages.sendMessage(player, "<red>Chyba databáze, zkus to prosím za chvíli.");
             return;
         }
 
+        if (reason == Reason.IP_LIMIT || reason == Reason.PLAYTIME) {
+            AntiAltGate.deny(player, reason, gate);
+            return;
+        }
         if (reason != Reason.OK) {
             Messages.sendTranslatedMessageTo(player, messageKey(reason));
             RewardActions.playSound(player, "sound_denied");

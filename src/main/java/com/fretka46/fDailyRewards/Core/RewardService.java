@@ -37,6 +37,7 @@ public final class RewardService {
     private final PassService pass;
     private final IntSupplier cacheMillis;
     private final Consumer<YearMonth> monthSeen;
+    private final Supplier<AntiAlt.Settings> antiAlt;
     private final Map<UUID, Cached<ClaimState>> cache = new ConcurrentHashMap<>();
     private final Map<UUID, Cached<PassService.Info>> passCache = new ConcurrentHashMap<>();
     private final Map<UUID, Cached<Boolean>> loginCache = new ConcurrentHashMap<>();
@@ -47,6 +48,13 @@ public final class RewardService {
      */
     public RewardService(Database db, TimeService time, Supplier<RewardCatalog> catalog, PassService pass, IntSupplier cacheMillis,
                          Consumer<YearMonth> monthSeen) {
+        this(db, time, catalog, pass, cacheMillis, monthSeen, () -> AntiAlt.Settings.OFF);
+    }
+
+    /** @param antiAlt nastavení brány proti altům (čte se při každém vyzvednutí, funguje s reloadem) */
+    public RewardService(Database db, TimeService time, Supplier<RewardCatalog> catalog, PassService pass, IntSupplier cacheMillis,
+                         Consumer<YearMonth> monthSeen, Supplier<AntiAlt.Settings> antiAlt) {
+        this.antiAlt = antiAlt;
         this.db = db;
         this.time = time;
         this.catalog = catalog;
@@ -114,14 +122,53 @@ public final class RewardService {
         loginCache.clear();
     }
 
-    /** Běžné vyzvednutí hráčem. Při {@link Reason#OK} je den už zapsaný (zdroj claim). */
+    /** Běžné vyzvednutí hráčem bez brány proti altům. Při {@link Reason#OK} je den už zapsaný (zdroj claim). */
     public Reason claim(UUID uuid, int day) {
+        return claim(uuid, day, null);
+    }
+
+    public AntiAlt.Settings antiAlt() {
+        AntiAlt.Settings s = antiAlt.get();
+        return s == null ? AntiAlt.Settings.OFF : s;
+    }
+
+    /**
+     * Běžné vyzvednutí hráčem s branou proti altům ({@code ctx} null nebo vypnutá brána = stejné jako dřív, nic se
+     * nečte ani nezapisuje). Brána se ptá až ve chvíli, kdy by vyzvednutí jinak prošlo, takže zamítnutí z jiného
+     * důvodu (už vyzvednuto, VIP…) má přednost a nespotřebuje místo v limitu IP.
+     */
+    public Reason claim(UUID uuid, int day, AntiAlt.Context ctx) {
         ClaimState s = evaluateFresh(uuid);
         Reason r = s.reasonForDay(day, catalog.get());
         if (r != Reason.OK) return r;
-        if (!db.tryInsertClaim(uuid, YearMonth.from(s.rewardDate()), s.rewardDate(), day, Source.CLAIM)) return Reason.ALREADY_CLAIMED;
+        AntiAlt.Settings gate = ctx == null || ctx.bypass() ? AntiAlt.Settings.OFF : antiAlt();
+        if (gate.playtimeOn() && ctx.playedMinutes() < gate.minPlaytimeMinutes()) return Reason.PLAYTIME;
+        String ipHash = gate.ipLimitOn() ? ctx.ipHash() : null;
+        boolean reserved = false;
+        if (ipHash != null) {
+            Database.IpReservation res = db.tryReserveIpClaim(ipHash, s.rewardDate(), uuid, gate.maxAccountsPerIp());
+            if (res == Database.IpReservation.FULL) return Reason.IP_LIMIT;
+            reserved = res == Database.IpReservation.NEW;
+        }
+        if (!db.tryInsertClaim(uuid, YearMonth.from(s.rewardDate()), s.rewardDate(), day, Source.CLAIM)) {
+            if (reserved) db.releaseIpClaim(ipHash, s.rewardDate(), uuid);
+            return Reason.ALREADY_CLAIMED;
+        }
         invalidate(uuid);
         return Reason.OK;
+    }
+
+    /**
+     * Zda by brána hráče teď odmítla (bez zápisu). Pro připomínky: hráči, kterého brána blokuje, se nepřipomíná.
+     * {@code null} = brána by nezasáhla.
+     */
+    public Reason gateWouldDeny(UUID uuid, AntiAlt.Context ctx) {
+        if (ctx == null || ctx.bypass()) return null;
+        AntiAlt.Settings gate = antiAlt();
+        if (gate.playtimeOn() && ctx.playedMinutes() < gate.minPlaytimeMinutes()) return Reason.PLAYTIME;
+        if (gate.ipLimitOn() && ctx.ipHash() != null
+                && db.ipClaimFull(ctx.ipHash(), time.today(), uuid, gate.maxAccountsPerIp())) return Reason.IP_LIMIT;
+        return null;
     }
 
     /**

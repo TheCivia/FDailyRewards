@@ -41,6 +41,7 @@ public final class Admin {
     private record Resolved(Target target, String error) {}
 
     private static final String UNKNOWN_PLAYER = "hráč není serveru znám (nikdy se nepřipojil)";
+    private static final String CASE_MISMATCH = "jméno se liší ve velikosti písmen od účtu %s (offline účet, jiné jméno = jiný účet)";
 
     private static String arg(CommandContext<CommandSourceStack> ctx, String name) {
         return ctx.getArgument(name, String.class);
@@ -69,33 +70,57 @@ public final class Admin {
 
     /**
      * Online hráč, jinak hráč, který se na server někdy připojil (podle jména z cache serveru, nebo podle UUID).
-     * Na Mojang se nedotazuje.
+     * Na Mojang se nedotazuje, {@code getOfflinePlayer(String)} se nepoužívá (v offline mode by vyrobil nový účet).
+     *
+     * <p>Hledání podle jména je na serveru bez ohledu na velikost písmen. Offline účet (UUID jiné verze než 4,
+     * odvozené ze jména) se jménem lišícím se jen velikostí písmen je ale <b>jiný účet</b>: Tebex nákup pro
+     * „Petr“ nesmí dostat alt „petr“. U takového účtu se proto vyžaduje přesná shoda jména.
      */
     private static Resolved resolve(String input) {
-        Player online = Bukkit.getPlayerExact(input);
-        if (online != null) return new Resolved(new Target(online.getUniqueId(), online.getName()), null);
-        OfflinePlayer op;
+        UUID asUuid = null;
         try {
-            op = Bukkit.getOfflinePlayer(UUID.fromString(input));
+            asUuid = UUID.fromString(input);
         } catch (IllegalArgumentException notUuid) {
-            op = Bukkit.getOfflinePlayerIfCached(input);
+            // jméno
         }
+        if (asUuid != null) {
+            OfflinePlayer op = Bukkit.getOfflinePlayer(asUuid);
+            if (!op.isOnline() && !op.hasPlayedBefore()) return new Resolved(null, UNKNOWN_PLAYER);
+            return new Resolved(new Target(op.getUniqueId(), op.getName() != null ? op.getName() : input), null);
+        }
+        OfflinePlayer op = Bukkit.getPlayerExact(input);
+        if (op == null) op = Bukkit.getOfflinePlayerIfCached(input);
         if (op == null || (!op.isOnline() && !op.hasPlayedBefore())) return new Resolved(null, UNKNOWN_PLAYER);
-        return new Resolved(new Target(op.getUniqueId(), op.getName() != null ? op.getName() : input), null);
+        String name = op.getName();
+        if (!nameMatches(op.getUniqueId(), name, input))
+            return new Resolved(null, String.format(CASE_MISMATCH, name == null ? op.getUniqueId().toString() : name));
+        return new Resolved(new Target(op.getUniqueId(), name != null ? name : input), null);
+    }
+
+    /**
+     * Shoda zadaného jména s nalezeným účtem: účet Mojang (UUID verze 4) stačí bez ohledu na velikost písmen,
+     * offline účet jen přesně.
+     */
+    static boolean nameMatches(UUID uuid, String accountName, String input) {
+        if (uuid.version() == 4) return true;
+        return accountName != null && accountName.equals(input);
     }
 
     /** {@link #resolve} pro běžné příkazy: při chybě pošle zprávu a vrátí null. */
     private static Target target(CommandSender sender, String input) {
         Resolved r = resolve(input);
-        if (r.target() == null) Messages.sendMessage(sender, "<red>Hráč <white>" + Messages.escape(input) + "<red>: " + r.error() + ". Zadej jméno nebo UUID.");
+        if (r.target() == null) Messages.sendMessage(sender, "<red>Hráč <white>" + Messages.escape(input) + "<red>: " + Messages.escape(r.error()) + ". Zadej jméno nebo UUID.");
         return r.target();
     }
 
     /** {@link #target} pro nákupní příkazy: chybu navíc zapíše do {@code failed-purchases.log}. */
     private static Target purchaseTarget(CommandSender sender, String purchase, String input) {
-        Target t = target(sender, input);
-        if (t == null) FailedPurchases.report(sender, purchase, input, null, UNKNOWN_PLAYER);
-        return t;
+        Resolved r = resolve(input);
+        if (r.target() == null) {
+            Messages.sendMessage(sender, "<red>Hráč <white>" + Messages.escape(input) + "<red>: " + Messages.escape(r.error()) + ". Zadej jméno nebo UUID.");
+            FailedPurchases.report(sender, purchase, input, null, r.error());
+        }
+        return r.target();
     }
 
     private static String who(Target t) {

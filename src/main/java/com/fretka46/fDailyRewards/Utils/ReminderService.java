@@ -93,7 +93,7 @@ public final class ReminderService {
                     return s;
                 });
                 ClaimState state = plugin.rewards().evaluate(p.getUniqueId());
-                if (!state.canClaimNow()) {
+                if (!state.canClaimNow() || gateBlocks(p)) {
                     st.dueAt = 0;
                     continue;
                 }
@@ -110,6 +110,12 @@ public final class ReminderService {
         } catch (RuntimeException ex) {
             Log.severe("Smyčka připomínek selhala", ex);
         }
+    }
+
+    /** Brána proti altům by vyzvednutí odmítla: nepřipomínat (vypnutá brána = nic nečte). */
+    private boolean gateBlocks(Player p) {
+        var ctx = AntiAltGate.context(p);
+        return ctx != null && plugin.rewards().gateWouldDeny(p.getUniqueId(), ctx) != null;
     }
 
     private void send(Player p, FileConfiguration cfg) {

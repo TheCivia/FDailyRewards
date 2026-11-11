@@ -30,7 +30,7 @@ public final class RewardActions {
             if (cmd == null || cmd.isBlank()) continue;
             String resolved = cmd.replace("%player_name%", player.getName()).replace("{player}", player.getName());
             try {
-                VaultPenize.spust(resolved); // cmi money give přes Vault (zdroj FDailyRewards v CiviaAnalytics)
+                VaultPenize.spust(resolved, player); // cmi money give přes Vault (zdroj FDailyRewards v CiviaAnalytics)
             } catch (RuntimeException ex) {
                 Log.severe("Příkaz odměny dne " + reward.day() + " selhal (" + resolved + ")", ex);
             }

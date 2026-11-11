@@ -31,7 +31,7 @@ import java.util.function.Consumer;
  * před migrací se vytvoří záloha souboru.
  */
 public final class Database implements AutoCloseable {
-    public static final int SCHEMA_VERSION = 2;
+    public static final int SCHEMA_VERSION = 3;
 
     /** Zdroj claimu. Do cooldownu se počítá jen {@code CLAIM} (běžné vyzvednutí hráčem). */
     public enum Source {
@@ -129,6 +129,9 @@ public final class Database implements AutoCloseable {
                     + "uuid TEXT NOT NULL, day INTEGER NOT NULL, created_at INTEGER NOT NULL)");
             st.executeUpdate("CREATE INDEX IF NOT EXISTS ix_pending ON pending_gifts (uuid)");
             st.executeUpdate("CREATE TABLE IF NOT EXISTS reminder_state (uuid TEXT PRIMARY KEY, last_at INTEGER NOT NULL)");
+            // v3: brána proti altům, jen solený hash IP (nikdy holá IP), den odměn a účet
+            st.executeUpdate("CREATE TABLE IF NOT EXISTS claim_ips (ip_hash TEXT NOT NULL, date TEXT NOT NULL,"
+                    + " uuid TEXT NOT NULL, PRIMARY KEY (ip_hash, date, uuid))");
             st.executeUpdate("INSERT INTO meta (key, value) VALUES ('schema_version', '" + SCHEMA_VERSION + "')"
                     + " ON CONFLICT(key) DO UPDATE SET value = excluded.value");
             conn.commit();
@@ -170,8 +173,9 @@ public final class Database implements AutoCloseable {
             int a = update("DELETE FROM rewards_claimed WHERE date < ?", today.minusDays(62).toString());
             int b = update("DELETE FROM daily_logins WHERE date < ?", today.minusDays(30).toString());
             int c = update("DELETE FROM vip_players WHERE month < ?", PassMath.toInt(currentMonth));
-            if (a + b + c > 0)
-                log.accept("Úklid DB: claimy " + a + ", loginy " + b + ", prošlé měsíce Passu " + c);
+            int d = update("DELETE FROM claim_ips WHERE date < ?", today.minusDays(2).toString());
+            if (a + b + c + d > 0)
+                log.accept("Úklid DB: claimy " + a + ", loginy " + b + ", prošlé měsíce Passu " + c + ", hashe IP " + d);
         }
     }
 
@@ -220,6 +224,78 @@ public final class Database implements AutoCloseable {
         synchronized (lock) {
             return update("DELETE FROM rewards_claimed WHERE uuid = ? AND month = ? AND day = ?",
                     uuid.toString(), PassMath.toInt(month), day);
+        }
+    }
+
+    // ------------------------------------------------------------------ brána proti altům (hash IP)
+
+    /** Výsledek {@link #tryReserveIpClaim}. */
+    public enum IpReservation {
+        /** účet už dnes z této IP vyzvedl, nic nového se nezapsalo */
+        EXISTING,
+        /** zapsáno nově */
+        NEW,
+        /** limit účtů pro tuto IP v tomto dni je vyčerpaný */
+        FULL
+    }
+
+    /**
+     * Atomicky: když účet z dané IP v daném dni odměn už vyzvedl, {@code EXISTING}; když je méně než {@code max}
+     * různých účtů, zapíše a vrátí {@code NEW}; jinak {@code FULL}.
+     */
+    public IpReservation tryReserveIpClaim(String ipHash, LocalDate date, UUID uuid, int max) {
+        synchronized (lock) {
+            boolean[] exists = {false};
+            query("SELECT 1 FROM claim_ips WHERE ip_hash = ? AND date = ? AND uuid = ?", rs -> exists[0] = true,
+                    ipHash, date.toString(), uuid.toString());
+            if (exists[0]) return IpReservation.EXISTING;
+            int[] n = {0};
+            query("SELECT COUNT(*) FROM claim_ips WHERE ip_hash = ? AND date = ?", rs -> n[0] = rs.getInt(1), ipHash, date.toString());
+            if (n[0] >= max) return IpReservation.FULL;
+            update("INSERT OR IGNORE INTO claim_ips (ip_hash, date, uuid) VALUES (?,?,?)", ipHash, date.toString(), uuid.toString());
+            return IpReservation.NEW;
+        }
+    }
+
+    /** Vrátí rezervaci (claim se nakonec nezapsal). */
+    public void releaseIpClaim(String ipHash, LocalDate date, UUID uuid) {
+        synchronized (lock) {
+            update("DELETE FROM claim_ips WHERE ip_hash = ? AND date = ? AND uuid = ?", ipHash, date.toString(), uuid.toString());
+        }
+    }
+
+    /** Bez zápisu: {@code true}, když by {@link #tryReserveIpClaim} vrátil FULL (pro připomínky). */
+    public boolean ipClaimFull(String ipHash, LocalDate date, UUID uuid, int max) {
+        synchronized (lock) {
+            boolean[] exists = {false};
+            query("SELECT 1 FROM claim_ips WHERE ip_hash = ? AND date = ? AND uuid = ?", rs -> exists[0] = true,
+                    ipHash, date.toString(), uuid.toString());
+            if (exists[0]) return false;
+            int[] n = {0};
+            query("SELECT COUNT(*) FROM claim_ips WHERE ip_hash = ? AND date = ?", rs -> n[0] = rs.getInt(1), ipHash, date.toString());
+            return n[0] >= max;
+        }
+    }
+
+    public int ipClaimRows() {
+        synchronized (lock) {
+            int[] n = {0};
+            query("SELECT COUNT(*) FROM claim_ips", rs -> n[0] = rs.getInt(1));
+            return n[0];
+        }
+    }
+
+    /**
+     * Sůl hashe IP z tabulky {@code meta}; při prvním volání ji vygeneruje a uloží. Reload ani restart ji nemění
+     * (DB zůstává), takže hashe ze stejného dne dál sedí.
+     */
+    public String ipSalt(java.util.function.Supplier<String> generator) {
+        synchronized (lock) {
+            String s = meta(com.fretka46.fDailyRewards.Core.AntiAlt.SALT_META_KEY);
+            if (s != null && !s.isBlank()) return s;
+            s = generator.get();
+            update("INSERT OR IGNORE INTO meta (key, value) VALUES (?, ?)", com.fretka46.fDailyRewards.Core.AntiAlt.SALT_META_KEY, s);
+            return meta(com.fretka46.fDailyRewards.Core.AntiAlt.SALT_META_KEY);
         }
     }
 

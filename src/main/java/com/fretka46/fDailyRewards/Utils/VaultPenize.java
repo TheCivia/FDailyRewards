@@ -53,24 +53,42 @@ public final class VaultPenize {
         Vyplata v = rozpoznej(prikaz);
         if (v == null) return false;
         if (!Bukkit.getPluginManager().isPluginEnabled("Vault")) return false;
-        return Vnitrek.vyplat(v, log);
+        return Vnitrek.vyplat(v, null, log);
     }
 
     /** Konzolový příkaz z configu: výplata peněz přes Vault, ostatní {@code dispatchCommand}. Hlavní vlákno. */
     public static void spust(String prikaz) {
-        if (zkus(prikaz, Bukkit.getLogger())) return;
+        spust(prikaz, null);
+    }
+
+    /**
+     * Jako {@link #spust(String)}, ale výplata jde přímo hráči {@code komu}, když příkaz zní na jeho přesné jméno
+     * (nehledá se znovu podle jména bez ohledu na velikost písmen, v offline mode by to mohl být jiný účet).
+     */
+    public static void spust(String prikaz, OfflinePlayer komu) {
+        Vyplata v = rozpoznej(prikaz);
+        if (v != null && Bukkit.getPluginManager().isPluginEnabled("Vault")
+                && Vnitrek.vyplat(v, cil(v, komu), Bukkit.getLogger())) return;
         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), prikaz);
+    }
+
+    /** Hráč pro výplatu: zadaný, když sedí jméno přesně; jinak null (dohledá se podle jména). */
+    static OfflinePlayer cil(Vyplata v, OfflinePlayer komu) {
+        return komu != null && v.hrac().equals(komu.getName()) ? komu : null;
     }
 
     /** Oddělené, aby se třídy Vaultu načetly až po kontrole, že Vault běží. */
     private static final class Vnitrek {
-        static boolean vyplat(Vyplata v, Logger log) {
+        static boolean vyplat(Vyplata v, OfflinePlayer znamy, Logger log) {
             // registrace se bere při každé výplatě: proxy CiviaAnalytics nebo CMI se mohou přeregistrovat
             RegisteredServiceProvider<Economy> rsp = Bukkit.getServicesManager().getRegistration(Economy.class);
             if (rsp == null) return false;
-            OfflinePlayer p = Bukkit.getPlayerExact(v.hrac());
+            OfflinePlayer p = znamy;
+            if (p == null) p = Bukkit.getPlayerExact(v.hrac());
             if (p == null) p = Bukkit.getOfflinePlayerIfCached(v.hrac());
             if (p == null) return false;
+            // offline účet (UUID ne verze 4) se jménem lišícím se velikostí písmen je jiný účet: nechat konzoli
+            if (p.getUniqueId().version() != 4 && !v.hrac().equals(p.getName())) return false;
             EconomyResponse r = rsp.getProvider().depositPlayer(p, v.castka());
             if (r != null && r.transactionSuccess()) return true;
             log.warning("Vault odmítl výplatu " + v.castka() + " hráči " + v.hrac() + " ("

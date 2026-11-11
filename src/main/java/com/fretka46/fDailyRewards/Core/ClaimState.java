@@ -29,7 +29,11 @@ public record ClaimState(
 
     public enum Reason {
         OK, ALREADY_CLAIMED_TODAY, VIP_COOLDOWN, ALL_CLAIMED, VIP_ONLY_REMAINING, NOT_YET, PREVIOUS_NOT_CLAIMED,
-        VIP_ONLY, ALREADY_CLAIMED, UNKNOWN_DAY
+        VIP_ONLY, ALREADY_CLAIMED, UNKNOWN_DAY,
+        /** brána proti altům: z této IP už dnes vyzvedl povolený počet účtů */
+        IP_LIMIT,
+        /** brána proti altům: účet nemá odehraný minimální čas */
+        PLAYTIME
     }
 
     public int claimedCount() {

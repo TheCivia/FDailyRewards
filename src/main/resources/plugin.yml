@@ -33,3 +33,6 @@ permissions:
     default: op
   fdailyrewards.admin.preview:
     default: op
+  fdailyrewards.bypass.antialt:
+    description: Obejde bránu proti altům (limit účtů z jedné IP a minimální odehraný čas)
+    default: false
