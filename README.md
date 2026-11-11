@@ -17,6 +17,32 @@ Zadání: `../zadani-2-fdailyrewards.md`. Paper 26.3, Java 25.
 | Bezpečnost dat | Atomický zápis claimu (`UNIQUE(uuid, měsíc, den)`, dvojklik nevydá odměnu dvakrát), atomický login bonus, jedno spojení se zámkem, schéma s verzí, **automatická záloha DB před migrací**. |
 | Přechod z permission | `legacy_pass_permission` (viz nasazení): Pass z LuckPerms se do vypnutí dál uznává. Nikdo nepřijde o Pass při nasazení JARu před úpravou Tebexu. |
 
+## Změny v 1.3.0 (brána proti altům, offline mode)
+
+Volitelná, **výchozí vypnutá**. Bez nových klíčů v configu (na server se samy nedoplní) se chování nemění a do DB se nic nového nezapisuje (jen sůl do `meta` při startu a prázdná tabulka `claim_ips` při migraci na schéma v3, se zálohou `database.db.bak-v2-…`).
+
+```yaml
+anti_alt:
+  max_accounts_per_ip: 0     # kolik různých účtů z jedné IP smí vyzvednout denní odměnu za den odměn (0 = vypnuto)
+  min_playtime_minutes: 0    # minimální odehraný čas účtu (statistika serveru) před vyzvednutím (0 = vypnuto)
+#anti_alt_ip_limit: "..."    # vlastní text zamítnutí, {max}
+#anti_alt_playtime: "..."    # vlastní text zamítnutí, {minutes} {left}
+```
+
+| Oblast | Změna |
+|---|---|
+| Limit IP | Počítají se **různé účty** z jedné IP v jednom dni odměn (reset 04:15), ne vyzvednutí: hráč s Passem, který týž den vyzvedne běžný i VIP den, zabere jedno místo. IPv6 se bere podle prefixu /64. |
+| Ochrana dat | V DB (tabulka `claim_ips`) je jen HMAC-SHA256 IP se solí, nikdy holá IP. Sůl se vygeneruje při prvním startu do tabulky `meta` (`ip_hash_salt`), reload ani restart ji nemění. Hashe se mažou po 2 dnech. |
+| Playtime | `Statistic.PLAY_ONE_MINUTE` hráče. Po wipu světa začínají všichni od nuly. |
+| Kde platí | Klik na den v menu (jediná cesta, kterou si hráč odměnu vyzvedne sám). Připomínky se hráči, kterého brána blokuje, neposílají. Neplatí pro dárky od AT (`giftnext`, `giftday`, `unlockmissed`, fronta) ani pro Premium Pass bonus za login (`login_commands`, jen s placeným `survival.login.tokeny`). Streak plugin nemá. |
+| Obejití | Právo `fdailyrewards.bypass.antialt` (výchozí `false`; pozor, `*` v LuckPerms ho dává). |
+| Zpráva | Výchozí texty v kódu (hover, zvuk `sound_denied`, bez červené), klíče `anti_alt_ip_limit` a `anti_alt_playtime` je přepíšou. |
+| Ikonka | Menu ukazuje den jako dostupný i hráči, kterého brána zablokuje; klik pak vypíše důvod. |
+| Tebex cíl | `givepass`/`setvip` a ostatní admin příkazy: offline účet (UUID jiné verze než 4) musí mít jméno přesně včetně velikosti písmen (v offline mode je „petr“ jiný účet než „Petr“, hledání jména na serveru je bez ohledu na velikost). Neshoda jde do `failed-purchases.log`. |
+| Výplata přes Vault | Peníze z odměny jdou přímo hráči, kterému se odměna dává, ne znovu podle jména. |
+
+**Před zapnutím ověřit na Preprod1**, že `player.getAddress()` za Velocity vrací IP hráče, ne proxy (jinak limit IP zablokuje všechny kromě prvních N hráčů za den).
+
 ## Změny v 1.2.3 (peníze přes Vault)
 
 | Oblast | Změna |
