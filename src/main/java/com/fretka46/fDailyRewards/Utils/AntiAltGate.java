@@ -21,9 +21,9 @@ public final class AntiAltGate {
 
     // Výchozí texty jsou v kódu: nové klíče se do configu na serveru samy nedoplní.
     static final String DEFAULT_IP_LIMIT = "<hover:show_text:'<white>倃</white> <#F4EBDD><bold>Denní odměny</bold><newline><newline>"
-            + "<#F4EBDD>Denní odměnu si z jedné sítě<newline><#F4EBDD>vyzvedne nejvýš <#ffaa00>{max}</#ffaa00> účtů za den.<newline>"
+            + "<#F4EBDD>Limit účtů z jedné sítě za den: <#ffaa00>{max}</#ffaa00>.<newline>"
             + "<#F4EBDD>Zkus to znovu po resetu dne.'><!shadow><white>候</white></!shadow> <#F4EBDD>Z tvé sítě už si dnes odměnu vyzvedl "
-            + "povolený počet účtů (<#ffaa00>{max}</#ffaa00>).</hover>";
+            + "povolený počet účtů (limit <#ffaa00>{max}</#ffaa00>).</hover>";
     static final String DEFAULT_PLAYTIME = "<hover:show_text:'<white>倃</white> <#F4EBDD><bold>Denní odměny</bold><newline><newline>"
             + "<#F4EBDD>Nové účty si denní odměnu<newline><#F4EBDD>vyzvednou po <#ffaa00>{minutes}</#ffaa00> hraní.'>"
             + "<!shadow><white>候</white></!shadow> <#F4EBDD>Denní odměnu si vyzvedneš po <#ffaa00>{minutes}</#ffaa00> hraní, "

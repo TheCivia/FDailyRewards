@@ -37,8 +37,8 @@ anti_alt:
 | Kde platí | Klik na den v menu (jediná cesta, kterou si hráč odměnu vyzvedne sám). Připomínky se hráči, kterého brána blokuje, neposílají. Neplatí pro dárky od AT (`giftnext`, `giftday`, `unlockmissed`, fronta) ani pro Premium Pass bonus za login (`login_commands`, jen s placeným `survival.login.tokeny`). Streak plugin nemá. |
 | Obejití | Právo `fdailyrewards.bypass.antialt` (výchozí `false`; pozor, `*` v LuckPerms ho dává). |
 | Zpráva | Výchozí texty v kódu (hover, zvuk `sound_denied`, bez červené), klíče `anti_alt_ip_limit` a `anti_alt_playtime` je přepíšou. |
-| Ikonka | Menu ukazuje den jako dostupný i hráči, kterého brána zablokuje; klik pak vypíše důvod. |
-| Tebex cíl | `givepass`/`setvip` a ostatní admin příkazy: offline účet (UUID jiné verze než 4) musí mít jméno přesně včetně velikosti písmen (v offline mode je „petr“ jiný účet než „Petr“, hledání jména na serveru je bez ohledu na velikost). Neshoda jde do `failed-purchases.log`. |
+| Ikonka a placeholdery | Menu, `%fdr_can_claim%`, `%fdr_state%` a `%fdr_status_line%` (hologram na spawnu) ukazují odměnu jako dostupnou i hráči, kterého brána zablokuje; klik pak vypíše důvod. |
+| Tebex cíl | `givepass`/`setvip` a ostatní admin příkazy: offline účet (UUID jiné verze než 4) musí mít jméno přesně včetně velikosti písmen (v offline mode je „petr“ jiný účet než „Petr“, hledání jména na serveru je bez ohledu na velikost). Neshoda jde do `failed-purchases.log`. Funguje jen, když auth plugin dává cracked účtům offline UUID (v3) nebo nedovolí jména lišící se jen velikostí písmen; kdyby dával cracked účtům náhodná v4 UUID, kontrola nic nedělá (pak posílat z Tebexu UUID). |
 | Výplata přes Vault | Peníze z odměny jdou přímo hráči, kterému se odměna dává, ne znovu podle jména. |
 
 **Před zapnutím ověřit na Preprod1**, že `player.getAddress()` za Velocity vrací IP hráče, ne proxy (jinak limit IP zablokuje všechny kromě prvních N hráčů za den).
