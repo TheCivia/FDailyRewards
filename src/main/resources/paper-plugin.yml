@@ -2,10 +2,20 @@ name: FDailyRewards
 version: '${version}'
 main: com.fretka46.fDailyRewards.FDailyRewards
 api-version: '26.3'
-prefix: FDailyRewards
 authors: [ fretka46 ]
+prefix: FDailyRewards
 description: Daily rewards plugin for TheCivia
-softdepend: [PlaceholderAPI, Vault]
+# join-classpath: plugin importuje nebo reflexí načítá třídy těchto pluginů
+dependencies:
+  server:
+    PlaceholderAPI:
+      load: BEFORE
+      required: false
+      join-classpath: true
+    Vault:
+      load: BEFORE
+      required: false
+      join-classpath: true
 permissions:
   fdailyrewards.reload:
     default: op
