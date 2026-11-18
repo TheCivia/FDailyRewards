@@ -4,6 +4,7 @@ import com.fretka46.fDailyRewards.Storage.DailyRewardItem;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
@@ -41,6 +42,8 @@ final class Items {
         if (extra == null || extra.isBlank()) return stack;
         ItemMeta meta = stack.getItemMeta();
         List<Component> lore = meta.lore() != null ? new ArrayList<>(meta.lore()) : new ArrayList<>();
+        // lore odměny končí prázdným řádkem (spodní okraj tooltipu); před stavem má být jen jeden prázdný řádek
+        while (!lore.isEmpty() && isBlank(lore.get(lore.size() - 1))) lore.remove(lore.size() - 1);
         lore.add(Component.empty());
         lore.addAll(splitLore(extra));
         meta.lore(lore);
@@ -53,6 +56,10 @@ final class Items {
         meta.setEnchantmentGlintOverride(true);
         stack.setItemMeta(meta);
         return stack;
+    }
+
+    static boolean isBlank(Component c) {
+        return PlainTextComponentSerializer.plainText().serialize(c).isBlank();
     }
 
     static List<Component> splitLore(String text) {

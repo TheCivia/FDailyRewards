@@ -19,6 +19,7 @@ class VaultPenizeTest {
         assertEquals(new VaultPenize.Vyplata("Tikka_1", 1000), VaultPenize.rozpoznej("cmi money give Tikka_1 1000"));
         assertEquals(new VaultPenize.Vyplata("Tikka_1", 250.5), VaultPenize.rozpoznej("/cmi money give Tikka_1 250.5 -s"));
         assertEquals(new VaultPenize.Vyplata("abc", 5), VaultPenize.rozpoznej("CMI Money Give abc 5"));
+        assertEquals(new VaultPenize.Vyplata("Tikka_1", 2500), VaultPenize.rozpoznej("civiacore money give Tikka_1 2500 -s"));
     }
 
     @Test
@@ -37,7 +38,7 @@ class VaultPenizeTest {
     void odmeny_v_configu() throws IOException {
         Path dir = Path.of("../../TheCivia-navrhy/configy-nove/FDailyRewards");
         org.junit.jupiter.api.Assumptions.assumeTrue(Files.isDirectory(dir), "configy-nove nejsou vedle repa");
-        Pattern p = Pattern.compile("\"(cmi money give [^\"]*)\"");
+        Pattern p = Pattern.compile("\"((?:cmi|civiacore) money give [^\"]*)\"");
         int n = 0;
         try (Stream<Path> s = Files.walk(dir)) {
             for (Path f : (Iterable<Path>) s.filter(x -> x.toString().endsWith(".yml"))::iterator) {

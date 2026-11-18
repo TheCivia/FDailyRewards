@@ -23,9 +23,10 @@ import java.util.regex.Pattern;
  */
 public final class VaultPenize {
 
-    /** {@code cmi money give <hráč> <částka> [-s]}, nic dalšího za tím (jinak se nechá konzoli). */
+    /** {@code cmi|civiacore money give <hráč> <částka> [-s]}, nic dalšího za tím (jinak se nechá konzoli).
+     *  Od přepisu na Civia jména (2026-11-18) mají configy {@code civiacore money give}. */
     static final Pattern PRIKAZ = Pattern.compile(
-            "^cmi\\s+money\\s+give\\s+([A-Za-z0-9_]{1,16})\\s+(\\d{1,12}(?:\\.\\d{1,2})?)(?:\\s+-s)?\\s*$",
+            "^(?:cmi|civiacore)\\s+money\\s+give\\s+([A-Za-z0-9_]{1,16})\\s+(\\d{1,12}(?:\\.\\d{1,2})?)(?:\\s+-s)?\\s*$",
             Pattern.CASE_INSENSITIVE);
 
     private VaultPenize() {}
@@ -35,7 +36,8 @@ public final class VaultPenize {
         if (prikaz == null) return null;
         String cmd = prikaz.strip();
         if (cmd.startsWith("/")) cmd = cmd.substring(1);
-        if (!cmd.toLowerCase(Locale.ROOT).startsWith("cmi ")) return null;
+        String low = cmd.toLowerCase(Locale.ROOT);
+        if (!low.startsWith("cmi ") && !low.startsWith("civiacore ")) return null;
         Matcher m = PRIKAZ.matcher(cmd);
         if (!m.matches()) return null;
         double castka = Double.parseDouble(m.group(2));
