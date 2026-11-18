@@ -13,11 +13,11 @@ message_prefix: "<#383838>[<#ff002e><bold>Survival</bold><#383838>] <#ffc700><bo
 #reward_claim_available_message: "<click:run_command:'/daily'><hover:show_text:'<gray>Klikni pro použití příkazu <#ff002e>/daily<gray>.'>Login odměna je dostupná! Použij <#ff002e>/daily<gray> pro její vyzvednutí!</hover></click>"
 reward_claim_available_command: "cmi bossbarmsg %player_name% &f&lMáš dostupnou {#ff002e}&lDenní Odměnu&f&l! Vyzvednout si ji můžeš pomocí {#ff002e}&l/daily -c:yellow -n:daily -s:1 -t:-1"
 #reward_claim_available_command: "say test"
-reward_claim_available_loreline: "<white>从 <#a8a8a8>· <#F4EBDD>Vyzvednout odměnu\n<white> "
-reward_claim_available_tommorow_loreline: "<white>Odměnu si budeš moci \n<white>vyzvednout <#ff002e>zítra<white>. \n<white>"
-reward_claim_available_2_days_loreline: "<white>Odměnu si budeš moci \n<white>vyzvednout za <#ff002e>2 dny<white>. \n<white>"
-reward_vip_locked_loreline: "<white>Pro vyzvednutí této odměny musíš \n<white>vlastnit <#ff002e>Login Pass<white>!\n<white>"
-reward_vip_can_skip: "<white>Můžeš si vyzvednout tuto odměnu, \n<white>jelikož máš <#ff002e>Login Pass<white>!"
+reward_claim_available_loreline: "<white>仾 <#a8a8a8>· <#00bfff>Vyzvednout odměnu \n<#F4EBDD> "
+reward_claim_available_tommorow_loreline: "<!shadow><white>候</white></!shadow> <#F4EBDD>Vyzvednout půjde <#ff002e>zítra<#F4EBDD>. \n<#F4EBDD> "
+reward_claim_available_2_days_loreline: "<!shadow><white>候</white></!shadow> <#F4EBDD>Vyzvednout půjde za <#ff002e>2 dny<#F4EBDD>. \n<#F4EBDD> "
+reward_vip_locked_loreline: "<!shadow><white>倓</white></!shadow> <#F4EBDD>Jen s <!shadow><white>㐈</white></!shadow> <#ffaa00>Login Passem<#F4EBDD>. \n<#F4EBDD> \n<white>仾 <#a8a8a8>· <#00bfff>Získat Login Pass \n<#F4EBDD> "
+reward_vip_can_skip: "<!shadow><white>倎</white></!shadow> <#7ddc6a>Odemčeno díky <!shadow><white>㐈</white></!shadow> <#7ddc6a>Login Passu \n<#F4EBDD> \n<white>仾 <#a8a8a8>· <#00bfff>Vyzvednout odměnu \n<#F4EBDD> "
 reward_already_claimed: "Tuto odměnu už máš vyzvednutou."
 reward_vip_only: "<click:open_url:'https://obchod.thecivia.net/package/login-pass'><hover:show_text:'<gray>Klikni pro přesun do obchodu: <#ff002e>https://obchod.thecivia.net/package/login-pass<gray>.'>Tato odměna je pouze pro hráče s <#ff002e>Login Passem<gray>!</hover></click>"
 reward_not_yet_available: "Tato odměna ještě není dostupná."
@@ -60,7 +60,7 @@ reward_claimed_item:
     customModelData: 352
     lore:
         - ""
-        - "<#F4EBDD>Tuto odměnu už máš vyzvednutou. "
+        - "<!shadow><white>倎</white></!shadow> <#7ddc6a>Vyzvednuto "
         - ""
 
 reward_claim_available_item:
@@ -69,7 +69,7 @@ reward_claim_available_item:
     customModelData: 351
     lore:
         - ""
-        - "<#F4EBDD>Klikni pro vyzvednutí odměny. "
+        - "<white>仾 <#a8a8a8>· <#00bfff>Vyzvednout odměnu "
         - ""
 
 reward_claim_available_item_vip:
@@ -78,7 +78,7 @@ reward_claim_available_item_vip:
     customModelData: 354
     lore:
         - ""
-        - "<#F4EBDD>Klikni pro vyzvednutí odměny. "
+        - "<white>仾 <#a8a8a8>· <#00bfff>Vyzvednout odměnu "
         - ""
 
 reward_claimed_item_vip:
@@ -87,7 +87,7 @@ reward_claimed_item_vip:
     customModelData: 355
     lore:
         - ""
-        - "<#F4EBDD>Tuto odměnu už máš vyzvednutou. "
+        - "<!shadow><white>倎</white></!shadow> <#7ddc6a>Vyzvednuto "
         - ""
 
 
