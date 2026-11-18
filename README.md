@@ -17,6 +17,15 @@ Zadání: `../zadani-2-fdailyrewards.md`. Paper 26.3, Java 25.
 | Bezpečnost dat | Atomický zápis claimu (`UNIQUE(uuid, měsíc, den)`, dvojklik nevydá odměnu dvakrát), atomický login bonus, jedno spojení se zámkem, schéma s verzí, **automatická záloha DB před migrací**. |
 | Přechod z permission | `legacy_pass_permission` (viz nasazení): Pass z LuckPerms se do vypnutí dál uznává. Nikdo nepřijde o Pass při nasazení JARu před úpravou Tebexu. |
 
+## Změny v 1.4.1 (styl menu, peníze přes Vault po přepisu na Civia jména)
+
+| Oblast | Změna |
+|---|---|
+| Lore stavu dne | Před textem stavu (`reward_claim_available_loreline`, `…_tommorow_…`, `reward_vip_locked_loreline`, `reward_vip_can_skip`) se odstraní prázdné řádky na konci lore odměny a vloží se právě jeden. Lore odměny tak smí končit prázdným řádkem (spodní okraj tooltipu u budoucích dnů) a před stavem nejsou dva prázdné řádky. |
+| Vault | `civiacore money give <hráč> <částka> [-s]` se platí přes Vault stejně jako `cmi money give` (configy po přepisu eco/CMI na Civia jména). |
+
+Texty menu ve stylu TheCivia generuje `TheCivia-navrhy/skripty/fdr_styl.py` (volá ho i `fdr_rok_gen.py`), nové klíče configu nejsou.
+
 ## Změny v 1.3.0 (brána proti altům, offline mode)
 
 Volitelná, **výchozí vypnutá**. Bez nových klíčů v configu (na server se samy nedoplní) se chování nemění a do DB se nic nového nezapisuje (jen sůl do `meta` při startu a prázdná tabulka `claim_ips` při migraci na schéma v3, se zálohou `database.db.bak-v2-…`).
