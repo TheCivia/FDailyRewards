@@ -108,7 +108,7 @@ reminder_join_delay_seconds: 8
 reminder_rollover_jitter_seconds: 60
 
 # Přechodová podpora: kdo má tuto permission, bere se mu Login Pass jako aktivní (staré nákupy přes LuckPerms).
-# Po převedení držitelů na "fdailyrewards admin givepass" a úpravě Tebexu nastav na "" (vypnuto).
+# Po převedení držitelů na "fdailyrewardsadmin givepass" a úpravě Tebexu nastav na "" (vypnuto).
 legacy_pass_permission: "survival.premium.dailylogin"
 
 # Kdo koupí Login Pass v posledních N dnech měsíce (včetně dnešního) bez aktivního Passu, dostane místo toho další měsíc. 0 = vypnuto.

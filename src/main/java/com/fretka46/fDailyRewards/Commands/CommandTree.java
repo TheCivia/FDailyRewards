@@ -2,7 +2,6 @@ package com.fretka46.fDailyRewards.Commands;
 
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
-import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
@@ -40,8 +39,10 @@ public final class CommandTree {
         return src -> src.getSender().hasPermission(node);
     }
 
+    /** Kořen /fdailyrewardsadmin vidí jen ten, kdo má reload nebo aspoň jedno admin právo. */
     private static Predicate<CommandSourceStack> anyAdmin() {
         return src -> {
+            if (src.getSender().hasPermission("fdailyrewards.reload")) return true;
             for (String p : ADMIN_PERMISSIONS) if (src.getSender().hasPermission("fdailyrewards.admin." + p)) return true;
             return false;
         };
@@ -51,8 +52,17 @@ public final class CommandTree {
         return Commands.literal(name).requires(perm("fdailyrewards.admin." + name));
     }
 
+    /** /fdailyrewards – hráčský kořen, jen otevře menu. */
     public static LiteralCommandNode<CommandSourceStack> buildRoot() {
-        ArgumentBuilder<CommandSourceStack, ?> admin = Commands.literal("admin").requires(anyAdmin())
+        return Commands.literal("fdailyrewards")
+                .executes(MainCommand::executor)
+                .build();
+    }
+
+    /** /fdailyrewardsadmin – reload a správa dní, Passu a VIP (dřív /fdailyrewards reload a /fdailyrewards admin …). */
+    public static LiteralCommandNode<CommandSourceStack> buildAdmin() {
+        return Commands.literal("fdailyrewardsadmin").requires(anyAdmin())
+                .then(Commands.literal("reload").requires(perm("fdailyrewards.reload")).executes(Reload::executor))
                 .then(sub("resetday").then(player()
                         .then(Commands.argument("day", IntegerArgumentType.integer(1, 31)).executes(Admin::ResetDayExecutor))))
                 .then(sub("setday").then(player()
@@ -82,12 +92,7 @@ public final class CommandTree {
                 // zpětně kompatibilní názvy (obě pod právem setvip)
                 .then(sub("setvip").then(player().executes(Admin::SetVipExecutor)))
                 .then(Commands.literal("removevip").requires(perm("fdailyrewards.admin.setvip")).then(player()
-                        .then(Commands.argument("month", IntegerArgumentType.integer(1, 12)).executes(Admin::RemoveVipExecutor))));
-
-        return Commands.literal("fdailyrewards")
-                .executes(MainCommand::executor)
-                .then(Commands.literal("reload").requires(perm("fdailyrewards.reload")).executes(Reload::executor))
-                .then(admin)
+                        .then(Commands.argument("month", IntegerArgumentType.integer(1, 12)).executes(Admin::RemoveVipExecutor))))
                 .build();
     }
 }

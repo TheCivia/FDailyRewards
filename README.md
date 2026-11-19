@@ -95,22 +95,22 @@ preview:
 
 ## Příkazy
 
-Vše pod `/fdailyrewards` (alias `/daily` řeší CMI CustomAlias a zůstává). Konzole má právo vždy.
+Hráčský `/fdailyrewards` jen otevře menu (alias `/daily` řeší CMI CustomAlias a zůstává). Správa je pod samostatným kořenem `/fdailyrewardsadmin` (dřív `/fdailyrewards reload` a `/fdailyrewards admin …`, staré cesty od 2026-11-19 neexistují). Konzole má právo vždy.
 
 | Příkaz | Právo | Funkce |
 |---|---|---|
-| `admin givepass <hráč> [měsíce=1]` | `fdailyrewards.admin.givepass` | Přidá měsíce za poslední zaplacený (nebo od aktuálního). |
-| `admin removepass <hráč> [YYYYMM]` | `…removepass` | Odebere měsíc, bez argumentu poslední. |
-| `admin passinfo <hráč>` | `…passinfo` | Zaplacené měsíce a konec platnosti. |
-| `admin setvip <hráč>` / `removevip <hráč> <1-12>` | `…setvip` | Zpětně kompatibilní (`setvip` = `givepass 1`). |
-| `admin giftnext <hráč>` | `…giftnext` | **Nástroj pro AT na požádání hráče** (není v obchodě). Dá další den, který hráč smí (VIP přeskočí bez Passu), mimo cooldown, zdroj `gift`. Režim `giftnext_mode`: `catchup` (výchozí) dá jen zameškaný den, `any` i den dopředu. Když není co dát, nic nepředá a vypíše proč. Offline hráč: fronta `pending_gifts`, doručí se při připojení. |
-| `admin giftday <hráč> <den>` | `…giftday` | Nástroj pro AT: konkrétní den. Hlídá duplicitu a VIP, zdroj `gift`. |
-| `admin unlockmissed <hráč> [give\|mark]` | `…unlockmissed` | Zameškané dny do dneška (VIP jen s Passem). `give` předá odměny (víc dní hromadně, viz `bulk_skip_command_prefixes`), `mark` jen označí. Zdroj `unlock` (nezablokuje dnešní claim), max `unlock_max_days`. |
-| `admin pending <hráč> [clear]` | `…pending` | Čekající dárky offline hráče (id, den, datum). `clear` je smaže (zapíše do logu, co smazal). |
-| `admin setday <hráč> <den>` | `…setday` | Označí den jako vyzvednutý bez odměny (cooldown se nemění). |
-| `admin resetday <hráč> <den>` | `…resetday` | Smaže claim dne **jen v aktuálním měsíci** (dřív mazal všechny měsíce). |
-| `admin checkday <hráč>` | `…checkday` | Stav hráče. |
-| `admin preview [apply]` | `…preview` | Stav ukázky na spawnu (načtený měsíc, kdy naposledy proběhla, názvy); `apply` spustí `preview.commands` znovu. |
+| `givepass <hráč> [měsíce=1]` | `fdailyrewards.admin.givepass` | Přidá měsíce za poslední zaplacený (nebo od aktuálního). |
+| `removepass <hráč> [YYYYMM]` | `…removepass` | Odebere měsíc, bez argumentu poslední. |
+| `passinfo <hráč>` | `…passinfo` | Zaplacené měsíce a konec platnosti. |
+| `setvip <hráč>` / `removevip <hráč> <1-12>` | `…setvip` | Zpětně kompatibilní (`setvip` = `givepass 1`). |
+| `giftnext <hráč>` | `…giftnext` | **Nástroj pro AT na požádání hráče** (není v obchodě). Dá další den, který hráč smí (VIP přeskočí bez Passu), mimo cooldown, zdroj `gift`. Režim `giftnext_mode`: `catchup` (výchozí) dá jen zameškaný den, `any` i den dopředu. Když není co dát, nic nepředá a vypíše proč. Offline hráč: fronta `pending_gifts`, doručí se při připojení. |
+| `giftday <hráč> <den>` | `…giftday` | Nástroj pro AT: konkrétní den. Hlídá duplicitu a VIP, zdroj `gift`. |
+| `unlockmissed <hráč> [give\|mark]` | `…unlockmissed` | Zameškané dny do dneška (VIP jen s Passem). `give` předá odměny (víc dní hromadně, viz `bulk_skip_command_prefixes`), `mark` jen označí. Zdroj `unlock` (nezablokuje dnešní claim), max `unlock_max_days`. |
+| `pending <hráč> [clear]` | `…pending` | Čekající dárky offline hráče (id, den, datum). `clear` je smaže (zapíše do logu, co smazal). |
+| `setday <hráč> <den>` | `…setday` | Označí den jako vyzvednutý bez odměny (cooldown se nemění). |
+| `resetday <hráč> <den>` | `…resetday` | Smaže claim dne **jen v aktuálním měsíci** (dřív mazal všechny měsíce). |
+| `checkday <hráč>` | `…checkday` | Stav hráče. |
+| `preview [apply]` | `…preview` | Stav ukázky na spawnu (načtený měsíc, kdy naposledy proběhla, názvy); `apply` spustí `preview.commands` znovu. |
 | `reload` | `fdailyrewards.reload` | Znovu načte config, odměny a služby. |
 
 ### Pro AT: dárky na požádání
@@ -120,11 +120,11 @@ Oprávnění se přidávají přes LuckPerms (výchozí `op`), hráči je nemaj�
 
 | Situace | Příkaz |
 |---|---|
-| Hráč zameškal den (nemohl hrát, výpadek serveru) a žádá o něj | `/fdailyrewards admin giftnext <hráč>`: dá nejstarší zameškaný den, dnešní běžné vyzvednutí mu zůstane |
-| Zameškal víc dní (např. delší výpadek) | `/fdailyrewards admin unlockmissed <hráč> give`: všechny zameškané dny do dneška najednou (bez zpráv na Discord za každý den) |
-| Konkrétní den (oprava chyby) | `/fdailyrewards admin giftday <hráč> <den>` |
-| Nejdřív zjistit stav | `/fdailyrewards admin checkday <hráč>`: další den, kolik zameškal, zda má Pass |
-| Hráč je offline | dárek čeká ve frontě a doručí se při připojení; `/fdailyrewards admin pending <hráč>` ho ukáže |
+| Hráč zameškal den (nemohl hrát, výpadek serveru) a žádá o něj | `/fdailyrewardsadmin giftnext <hráč>`: dá nejstarší zameškaný den, dnešní běžné vyzvednutí mu zůstane |
+| Zameškal víc dní (např. delší výpadek) | `/fdailyrewardsadmin unlockmissed <hráč> give`: všechny zameškané dny do dneška najednou (bez zpráv na Discord za každý den) |
+| Konkrétní den (oprava chyby) | `/fdailyrewardsadmin giftday <hráč> <den>` |
+| Nejdřív zjistit stav | `/fdailyrewardsadmin checkday <hráč>`: další den, kolik zameškal, zda má Pass |
+| Hráč je offline | dárek čeká ve frontě a doručí se při připojení; `/fdailyrewardsadmin pending <hráč>` ho ukáže |
 
 `giftnext` v režimu `catchup` odmítne hráče, který nic nezameškal („hráč nemá zameškaný den“), aby AT omylem nedal zítřejší odměnu dopředu (hráč by ji pak zítra neměl). Bez Login Passu se VIP dny přeskakují.
 
@@ -167,11 +167,11 @@ Restart serveru je denně v 04:00, reset dne v 04:15. JAR nahraj přes den, migr
 1. **Záloha** složky `plugins/FDailyRewards` (plugin navíc sám udělá `database.db.bak-v1-<čas>` před migrací).
 2. Smaž starý JAR, nahraj `deploy/FDailyRewards-1.1.1.jar`. **`config.yml` ani `rewardsTemplate.yml` neměň.** Nové klíče se berou z výchozího configu v JARu (prod config je jeho přesný prefix). Volitelně `deploy/config.yml` jako přehled všech klíčů.
 3. Po restartu zkontroluj log: `Záloha databáze před migrací v1 -> v2`, `Načteno 31 dní odměn`, žádný `SEVERE`.
-4. Rychlý test: `/fdailyrewards admin passinfo <ty>`, `/papi parse me %fdr_state%`, `/daily`.
-5. **Převod držitelů Passu** (malý počet): `lp search permission survival.premium.dailylogin`, každému `fdailyrewards admin givepass <hráč> 1` (podle zbývajícího času klidně 2). Do této chvíle je drží `legacy_pass_permission`.
-6. **Tebex** (Login Pass, Premium + Login, Měsíční Bundle): příkaz `lp user {username} permission settemp survival.premium.dailylogin true 30d accumulate` nahraď `fdailyrewards admin givepass {username} 1`. Premium Pass (tokeny, `survival.login.tokeny`) se nemění. Balíček „Další den“ se **nezakládá**: `giftnext` a `giftday` jsou jen pro AT.
+4. Rychlý test: `/fdailyrewardsadmin passinfo <ty>`, `/papi parse me %fdr_state%`, `/daily`.
+5. **Převod držitelů Passu** (malý počet): `lp search permission survival.premium.dailylogin`, každému `fdailyrewardsadmin givepass <hráč> 1` (podle zbývajícího času klidně 2). Do této chvíle je drží `legacy_pass_permission`.
+6. **Tebex** (Login Pass, Premium + Login, Měsíční Bundle): příkaz `lp user {username} permission settemp survival.premium.dailylogin true 30d accumulate` nahraď `fdailyrewardsadmin givepass {username} 1`. Premium Pass (tokeny, `survival.login.tokeny`) se nemění. Balíček „Další den“ se **nezakládá**: `giftnext` a `giftday` jsou jen pro AT.
 7. **Hologram** `CMI/Saves/Holograms.yml` ř. 3171: `{luckperms_has_permission_survival.premium.dailylogin}` → `{fdr_vip_active}`.
-8. Po týdnu bez problémů nastav `legacy_pass_permission: ""`, `/fdailyrewards reload`, a starou permission odeber.
+8. Po týdnu bez problémů nastav `legacy_pass_permission: ""`, `/fdailyrewardsadmin reload`, a starou permission odeber.
 9. **Neúspěšné nákupy Passu:** `plugins/FDailyRewards/failed-purchases.log` (čas, příkaz, hráč, UUID, důvod, oddělené tabulátorem) pravidelně kontroluj. Typicky jde o Pass koupený pro jméno, které na serveru nikdy nehrálo: zadej ho ručně správnému hráči (`givepass`), nebo vrať platbu. Pro upozornění na Discord nastav `failed_purchase_command`, např. `discordsrv broadcast #kanal Nákup {command} pro {player} selhal: {reason}`.
 
 ### Napojení na CiviaRank

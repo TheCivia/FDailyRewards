@@ -86,7 +86,10 @@ public final class FDailyRewards extends JavaPlugin {
         manager.registerEvents(new LeftListener(), this);
 
         getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS,
-                commands -> commands.registrar().register(CommandTree.buildRoot()));
+                commands -> {
+                    commands.registrar().register(CommandTree.buildRoot());
+                    commands.registrar().register(CommandTree.buildAdmin());
+                });
 
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
             papi = new PapiExpansion(this);
