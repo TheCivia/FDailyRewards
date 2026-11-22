@@ -1,4 +1,4 @@
-# FDailyRewards 1.4.1
+# FDailyRewards 1.4.2
 
 Update pluginu denních odměn pro TheCivia (základ: zdroj od fretka46, viz `../FDailyRewards-original-src`).
 Zadání: `../zadani-2-fdailyrewards.md`. Paper 26.3, Java 25.
@@ -16,6 +16,14 @@ Zadání: `../zadani-2-fdailyrewards.md`. Paper 26.3, Java 25.
 | Připomínky | Jedna smyčka místo úlohy na hráče: po připojení za 8 s, po resetu dne s rozptylem 0–60 s, jinak po `reward_claim_available_interval`. Jen dokud je odměna opravdu dostupná. Čas poslední připomínky je v DB (restart serveru nevyvolá zprávu navíc). |
 | Bezpečnost dat | Atomický zápis claimu (`UNIQUE(uuid, měsíc, den)`, dvojklik nevydá odměnu dvakrát), atomický login bonus, jedno spojení se zámkem, schéma s verzí, **automatická záloha DB před migrací**. |
 | Přechod z permission | `legacy_pass_permission` (viz nasazení): Pass z LuckPerms se do vypnutí dál uznává. Nikdo nepřijde o Pass při nasazení JARu před úpravou Tebexu. |
+
+## Změny v 1.4.2 a 1.4.0 (Paper plugin, události pro CiviaAnalytics)
+
+| Oblast | Změna |
+|---|---|
+| Paper plugin | `plugin.yml` nahradil `paper-plugin.yml`. PlaceholderAPI a Vault jsou volitelné závislosti (`dependencies.server`, `required: false`). |
+| Správa | Admin příkazy jsou pod samostatným kořenem `/fdailyrewardsadmin` (viz Příkazy), oprávnění beze změny. |
+| CiviaAnalytics | Události `menu.open` (`denni_odmeny`) při otevření menu a `daily.claim` (den) při vyzvednutí z menu. CiviaAnalytics se hledá za běhu, bez něj se nic neposílá. |
 
 ## Změny v 1.4.1 (styl menu, peníze přes Vault po přepisu na Civia jména)
 
@@ -50,7 +58,7 @@ anti_alt:
 | Tebex cíl | `givepass`/`setvip` a ostatní admin příkazy: offline účet (UUID jiné verze než 4) musí mít jméno přesně včetně velikosti písmen (v offline mode je „petr“ jiný účet než „Petr“, hledání jména na serveru je bez ohledu na velikost). Neshoda jde do `failed-purchases.log`. Funguje jen, když auth plugin dává cracked účtům offline UUID (v3) nebo nedovolí jména lišící se jen velikostí písmen; kdyby dával cracked účtům náhodná v4 UUID, kontrola nic nedělá (pak posílat z Tebexu UUID). |
 | Výplata přes Vault | Peníze z odměny jdou přímo hráči, kterému se odměna dává, ne znovu podle jména. |
 
-**Před zapnutím ověřit na Preprod1**, že `player.getAddress()` za Velocity vrací IP hráče, ne proxy (jinak limit IP zablokuje všechny kromě prvních N hráčů za den).
+**Před zapnutím ověřit na testovacím serveru**, že `player.getAddress()` za Velocity vrací IP hráče, ne proxy (jinak limit IP zablokuje všechny kromě prvních N hráčů za den).
 
 ## Změny v 1.2.3 (peníze přes Vault)
 
@@ -162,7 +170,7 @@ Offline hráč vrací prázdný řetězec. Texty jsou v configu: `placeholders.y
 
 ## Nasazení na produkci
 
-Restart serveru je denně v 04:00, reset dne v 04:15. JAR nahraj přes den, migrace proběhne při nejbližším restartu. Verze 1.1.1 ani 1.2.0 nemění schéma DB oproti 1.1.0 (1.2.0 jen zapisuje klíč `preview_month` do tabulky `meta`).
+Restart serveru je denně v 04:00, reset dne v 04:15. JAR nahraj přes den, migrace proběhne při nejbližším restartu. Verze 1.1.1 ani 1.2.0 nemění schéma DB oproti 1.1.0 (1.2.0 jen zapisuje klíč `preview_month` do tabulky `meta`). 1.3.0 migruje na schéma v3 (tabulka `claim_ips`, záloha `database.db.bak-v2-…`).
 
 1. **Záloha** složky `plugins/FDailyRewards` (plugin navíc sám udělá `database.db.bak-v1-<čas>` před migrací).
 2. Smaž starý JAR, nahraj `deploy/FDailyRewards-1.1.1.jar`. **`config.yml` ani `rewardsTemplate.yml` neměň.** Nové klíče se berou z výchozího configu v JARu (prod config je jeho přesný prefix). Volitelně `deploy/config.yml` jako přehled všech klíčů.
@@ -199,10 +207,10 @@ Restart serveru je denně v 04:00, reset dne v 04:15. JAR nahraj přes den, migr
 - Hromadné předání běží 1 den za tick. Když se server vypne uprostřed (nejvýš pár ticků), dny jsou zapsané jako vyzvednuté, ale zbytek odměn nedorazí (dořešit přes `resetday` + `unlockmissed`). Když se odpojí hráč, zbytek jde do fronty.
 - `vip_expires_unix` a `vip_months_left` počítají jen Pass v DB, ne přechodovou permission.
 - `setCustomModelData(int)` je v API 26.3 označené jako zastaralé (funguje, jako ve starém JARu). Nahradit až s větším zásahem do configu.
-- `api-version: '26.3'` v `plugin.yml`.
+- `api-version: '26.3'` v `paper-plugin.yml`.
 
 ## Testy
 
-`gradle test` (JDK 25, 46 testů): všechny stavy `evaluate`, neaktivní hráč, VIP přeskok, kratší měsíc, okno 00:00–04:14, hranice měsíce, tři nákupy Passu za sebou, `giftnext`/`unlockmissed`, atomicita claimu, migrace staré DB (včetně duplicit) a záloha. Od 1.1.1 navíc `ReviewFixesTest`: režimy `giftnext`, log neúspěchů, přepnutí měsíce po resetu, čekání po VIP dni, `next_in`, fronta dárků, filtr hromadného předání, cache, načtení `config.yml` přes skutečné `YamlConfiguration` a mezery v Passu. S `-PprodDb=<cesta>` se migruje i kopie produkční DB.
+`gradle test` (JDK 25): všechny stavy `evaluate`, neaktivní hráč, VIP přeskok, kratší měsíc, okno 00:00–04:14, hranice měsíce, tři nákupy Passu za sebou, `giftnext`/`unlockmissed`, atomicita claimu, migrace staré DB (včetně duplicit) a záloha. Od 1.1.1 navíc `ReviewFixesTest`: režimy `giftnext`, log neúspěchů, přepnutí měsíce po resetu, čekání po VIP dni, `next_in`, fronta dárků, filtr hromadného předání, cache, načtení `config.yml` přes skutečné `YamlConfiguration` a mezery v Passu. S `-PprodDb=<cesta>` se migruje i kopie produkční DB.
 
-Build: `gradle build` (JDK 25) → `build/libs/FDailyRewards-1.2.0.jar`. Od 1.2.0 navíc `PreviewServiceTest` (jednou za měsíc i po restartu, `apply`, chybný příkaz, soubor bez příkazů, čtení sekce `preview`).
+Build: `gradle build` (JDK 25) → `build/libs/FDailyRewards-1.4.2.jar`. Vault API se kompiluje proti jaru z lokální cesty nastavené v `build.gradle`, bez něj build neprojde. Od 1.2.0 navíc `PreviewServiceTest` (jednou za měsíc i po restartu, `apply`, chybný příkaz, soubor bez příkazů, čtení sekce `preview`).
