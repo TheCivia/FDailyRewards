@@ -48,6 +48,8 @@ public class Menu implements InventoryHolder {
 
     public static void openFor(Player player) {
         new Menu(player).open();
+        // po openInventory: CiviaAnalytics si okno zapamatuje a počítá v něm kliky
+        com.fretka46.fDailyRewards.Core.Analytika.track(player, "menu.open", "predmet", "denni_odmeny");
     }
 
     public void open() {
